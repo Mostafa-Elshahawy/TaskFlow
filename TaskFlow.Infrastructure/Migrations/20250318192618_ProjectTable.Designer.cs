@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TaskFlow.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using TaskFlow.Infrastructure.Persistence;
 namespace TaskFlow.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20250318192618_ProjectTable")]
+    partial class ProjectTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,21 +24,6 @@ namespace TaskFlow.Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("ApplicationUserOrganization", b =>
-                {
-                    b.Property<int>("MemberOrganizationsId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("MembersId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("MemberOrganizationsId", "MembersId");
-
-                    b.HasIndex("MembersId");
-
-                    b.ToTable("OrganizationMembers", (string)null);
-                });
 
             modelBuilder.Entity("ApplicationUserProject", b =>
                 {
@@ -49,7 +37,7 @@ namespace TaskFlow.Infrastructure.Migrations
 
                     b.HasIndex("ManagersId");
 
-                    b.ToTable("ProjectManagers", (string)null);
+                    b.ToTable("ApplicationUserProject");
                 });
 
             modelBuilder.Entity("ApplicationUserProject1", b =>
@@ -64,7 +52,7 @@ namespace TaskFlow.Infrastructure.Migrations
 
                     b.HasIndex("MembersId");
 
-                    b.ToTable("ProjectMembers", (string)null);
+                    b.ToTable("ApplicationUserProject1");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -265,44 +253,6 @@ namespace TaskFlow.Infrastructure.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("TaskFlow.Domain.Entites.Organization", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("OwnerId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("isDeleted")
-                        .HasColumnType("bit");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OwnerId");
-
-                    b.ToTable("Organizations");
-                });
-
             modelBuilder.Entity("TaskFlow.Domain.Entites.Project", b =>
                 {
                     b.Property<int>("Id")
@@ -328,20 +278,12 @@ namespace TaskFlow.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("OrganizationId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("isDeleted")
-                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedByUserId");
-
-                    b.HasIndex("OrganizationId");
 
                     b.ToTable("Projects");
                 });
@@ -392,9 +334,6 @@ namespace TaskFlow.Infrastructure.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("isDeleted")
-                        .HasColumnType("bit");
-
                     b.HasKey("Id");
 
                     b.HasIndex("AssigneeId");
@@ -404,21 +343,6 @@ namespace TaskFlow.Infrastructure.Migrations
                     b.HasIndex("ProjectId");
 
                     b.ToTable("Tasks");
-                });
-
-            modelBuilder.Entity("ApplicationUserOrganization", b =>
-                {
-                    b.HasOne("TaskFlow.Domain.Entites.Organization", null)
-                        .WithMany()
-                        .HasForeignKey("MemberOrganizationsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TaskFlow.Domain.Entites.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("MembersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("ApplicationUserProject", b =>
@@ -502,17 +426,6 @@ namespace TaskFlow.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("TaskFlow.Domain.Entites.Organization", b =>
-                {
-                    b.HasOne("TaskFlow.Domain.Entites.ApplicationUser", "Owner")
-                        .WithMany("OwnedOrganizations")
-                        .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Owner");
-                });
-
             modelBuilder.Entity("TaskFlow.Domain.Entites.Project", b =>
                 {
                     b.HasOne("TaskFlow.Domain.Entites.ApplicationUser", "CreatedBy")
@@ -521,15 +434,7 @@ namespace TaskFlow.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("TaskFlow.Domain.Entites.Organization", "Organization")
-                        .WithMany("Projects")
-                        .HasForeignKey("OrganizationId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.Navigation("CreatedBy");
-
-                    b.Navigation("Organization");
                 });
 
             modelBuilder.Entity("TaskFlow.Domain.Entites.Task", b =>
@@ -548,7 +453,7 @@ namespace TaskFlow.Infrastructure.Migrations
                     b.HasOne("TaskFlow.Domain.Entites.Project", "Project")
                         .WithMany("Tasks")
                         .HasForeignKey("ProjectId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Assignee");
@@ -563,13 +468,6 @@ namespace TaskFlow.Infrastructure.Migrations
                     b.Navigation("AssignedTasks");
 
                     b.Navigation("CreatedTasks");
-
-                    b.Navigation("OwnedOrganizations");
-                });
-
-            modelBuilder.Entity("TaskFlow.Domain.Entites.Organization", b =>
-                {
-                    b.Navigation("Projects");
                 });
 
             modelBuilder.Entity("TaskFlow.Domain.Entites.Project", b =>

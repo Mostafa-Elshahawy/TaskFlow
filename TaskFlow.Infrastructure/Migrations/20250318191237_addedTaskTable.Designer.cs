@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TaskFlow.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using TaskFlow.Infrastructure.Persistence;
 namespace TaskFlow.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20250318191237_addedTaskTable")]
+    partial class addedTaskTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,51 +24,6 @@ namespace TaskFlow.Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("ApplicationUserOrganization", b =>
-                {
-                    b.Property<int>("MemberOrganizationsId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("MembersId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("MemberOrganizationsId", "MembersId");
-
-                    b.HasIndex("MembersId");
-
-                    b.ToTable("OrganizationMembers", (string)null);
-                });
-
-            modelBuilder.Entity("ApplicationUserProject", b =>
-                {
-                    b.Property<int>("ManagedProjectsId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ManagersId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("ManagedProjectsId", "ManagersId");
-
-                    b.HasIndex("ManagersId");
-
-                    b.ToTable("ProjectManagers", (string)null);
-                });
-
-            modelBuilder.Entity("ApplicationUserProject1", b =>
-                {
-                    b.Property<int>("AssignedProjectsId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("MembersId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("AssignedProjectsId", "MembersId");
-
-                    b.HasIndex("MembersId");
-
-                    b.ToTable("ProjectMembers", (string)null);
-                });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
@@ -265,87 +223,6 @@ namespace TaskFlow.Infrastructure.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("TaskFlow.Domain.Entites.Organization", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("OwnerId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("isDeleted")
-                        .HasColumnType("bit");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OwnerId");
-
-                    b.ToTable("Organizations");
-                });
-
-            modelBuilder.Entity("TaskFlow.Domain.Entites.Project", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedByUserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("OrganizationId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("isDeleted")
-                        .HasColumnType("bit");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreatedByUserId");
-
-                    b.HasIndex("OrganizationId");
-
-                    b.ToTable("Projects");
-                });
-
             modelBuilder.Entity("TaskFlow.Domain.Entites.Task", b =>
                 {
                     b.Property<int>("Id")
@@ -378,9 +255,6 @@ namespace TaskFlow.Infrastructure.Migrations
                     b.Property<int>("Priority")
                         .HasColumnType("int");
 
-                    b.Property<int>("ProjectId")
-                        .HasColumnType("int");
-
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
@@ -392,63 +266,13 @@ namespace TaskFlow.Infrastructure.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("isDeleted")
-                        .HasColumnType("bit");
-
                     b.HasKey("Id");
 
                     b.HasIndex("AssigneeId");
 
                     b.HasIndex("CreatedByUserId");
 
-                    b.HasIndex("ProjectId");
-
                     b.ToTable("Tasks");
-                });
-
-            modelBuilder.Entity("ApplicationUserOrganization", b =>
-                {
-                    b.HasOne("TaskFlow.Domain.Entites.Organization", null)
-                        .WithMany()
-                        .HasForeignKey("MemberOrganizationsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TaskFlow.Domain.Entites.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("MembersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ApplicationUserProject", b =>
-                {
-                    b.HasOne("TaskFlow.Domain.Entites.Project", null)
-                        .WithMany()
-                        .HasForeignKey("ManagedProjectsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TaskFlow.Domain.Entites.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("ManagersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ApplicationUserProject1", b =>
-                {
-                    b.HasOne("TaskFlow.Domain.Entites.Project", null)
-                        .WithMany()
-                        .HasForeignKey("AssignedProjectsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TaskFlow.Domain.Entites.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("MembersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -502,36 +326,6 @@ namespace TaskFlow.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("TaskFlow.Domain.Entites.Organization", b =>
-                {
-                    b.HasOne("TaskFlow.Domain.Entites.ApplicationUser", "Owner")
-                        .WithMany("OwnedOrganizations")
-                        .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Owner");
-                });
-
-            modelBuilder.Entity("TaskFlow.Domain.Entites.Project", b =>
-                {
-                    b.HasOne("TaskFlow.Domain.Entites.ApplicationUser", "CreatedBy")
-                        .WithMany()
-                        .HasForeignKey("CreatedByUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("TaskFlow.Domain.Entites.Organization", "Organization")
-                        .WithMany("Projects")
-                        .HasForeignKey("OrganizationId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("CreatedBy");
-
-                    b.Navigation("Organization");
-                });
-
             modelBuilder.Entity("TaskFlow.Domain.Entites.Task", b =>
                 {
                     b.HasOne("TaskFlow.Domain.Entites.ApplicationUser", "Assignee")
@@ -545,17 +339,9 @@ namespace TaskFlow.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("TaskFlow.Domain.Entites.Project", "Project")
-                        .WithMany("Tasks")
-                        .HasForeignKey("ProjectId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.Navigation("Assignee");
 
                     b.Navigation("CreatedBy");
-
-                    b.Navigation("Project");
                 });
 
             modelBuilder.Entity("TaskFlow.Domain.Entites.ApplicationUser", b =>
@@ -563,18 +349,6 @@ namespace TaskFlow.Infrastructure.Migrations
                     b.Navigation("AssignedTasks");
 
                     b.Navigation("CreatedTasks");
-
-                    b.Navigation("OwnedOrganizations");
-                });
-
-            modelBuilder.Entity("TaskFlow.Domain.Entites.Organization", b =>
-                {
-                    b.Navigation("Projects");
-                });
-
-            modelBuilder.Entity("TaskFlow.Domain.Entites.Project", b =>
-                {
-                    b.Navigation("Tasks");
                 });
 #pragma warning restore 612, 618
         }
