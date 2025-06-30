@@ -1,5 +1,6 @@
 using Scalar.AspNetCore;
 using TaskFlow.Api.Extensions;
+using TaskFlow.Api.Infrastructure;
 using TaskFlow.Application.Extensions;
 using TaskFlow.Domain.Entites;
 using TaskFlow.Infrastructure.Extensions;
@@ -15,6 +16,9 @@ namespace TaskFlow
             builder.AddPresentation();
             builder.Services.AddApplication();
             builder.Services.AddInfrastructure(builder.Configuration);
+
+            builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+            builder.Services.AddProblemDetails();
 
             var app = builder.Build();
 
@@ -33,6 +37,8 @@ namespace TaskFlow
 
             app.UseAuthentication();
             app.UseAuthorization();
+
+            app.UseExceptionHandler();
 
             app.MapGroup("/api/identity")
                .WithTags("Identity")

@@ -1,4 +1,6 @@
-﻿namespace TaskFlow.Api.Extensions;
+﻿using Serilog;
+
+namespace TaskFlow.Api.Extensions;
 
 public static class ApplicationBuilderExtensions 
 {
@@ -8,5 +10,9 @@ public static class ApplicationBuilderExtensions
         builder.Services.AddControllers();
         builder.Services.AddAuthentication();
         builder.Services.AddEndpointsApiExplorer();
+        builder.Host.UseSerilog((context, configration) =>
+            configration
+                .ReadFrom.Configuration(context.Configuration)
+        );
     }
 }
