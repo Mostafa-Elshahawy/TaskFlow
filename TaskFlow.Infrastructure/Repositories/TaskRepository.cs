@@ -1,81 +1,53 @@
-﻿using TaskFlow.Domain.Entites;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using TaskFlow.Application.Extensions;
+using TaskFlow.Domain.Constants;
+using TaskFlow.Domain.Entites;
 using TaskFlow.Domain.Repositories;
 using TaskFlow.Infrastructure.Persistence;
-using Task = TaskFlow.Domain.Entites.Task;
+using Task = System.Threading.Tasks.Task;
 
 namespace TaskFlow.Infrastructure.Repositories;
 
 internal class TaskRepository(ApplicationDBContext dbContext) : ITaskRepository
 {
-    public async Task<int> Create(Task entity)
+    public async Task<int> Create(TaskEntity entity)
     {
-      dbContext.Tasks.Add(entity);
+      dbContext.Add(entity);
         await dbContext.SaveChangesAsync();
         return entity.Id;
     }
 
-    public Task Delete(Task entity)
+    public async Task Delete(TaskEntity entity)
     {
-        throw new NotImplementedException();
+        dbContext.Remove(entity);
+        await dbContext.SaveChangesAsync();
     }
 
-    public Task<IEnumerable<Task>> GetAll()
+    public async Task<TaskEntity?> GetById(int id)
     {
-        throw new NotImplementedException();
+        var task = await dbContext.Tasks.FirstOrDefaultAsync(t => t.Id == id);
+
+        return task;
     }
 
-    public Task<IEnumerable<Task>> GetByAssigneeId(string assigneeId)
+    public async Task<IEnumerable<TaskEntity>> GetFilteredTasks(TaskFilter taskFilter)
     {
-        throw new NotImplementedException();
-    }
+        var query = dbContext.Tasks
+        .AsNoTracking()
+        .Include(t => t.Assignee)
+        .Include(t => t.Project)
+        .AsQueryable();
 
-    public Task<IEnumerable<Task>> GetByCreatedAt(DateTime createdAt)
-    {
-        throw new NotImplementedException();
-    }
+        query = query
+            .WhereIf(taskFilter.Status.HasValue, t => t.Status == taskFilter.Status!.Value)
+            .WhereIf(taskFilter.Priority.HasValue, t => t.Priority == taskFilter.Priority!.Value)
+            .WhereIf(!string.IsNullOrEmpty(taskFilter.AssigneeId), t => t.AssigneeId == taskFilter.AssigneeId)
+            .WhereIf(taskFilter.ProjectId.HasValue, t => t.ProjectId == taskFilter.ProjectId)
+            .WhereIf(taskFilter.DueBefore.HasValue, t => t.DueDate < taskFilter.DueBefore)
+            .WhereIf(taskFilter.DueAfter.HasValue, t => t.DueDate > taskFilter.DueAfter);
 
-    public Task<IEnumerable<Task>> GetByCreatedByUserId(string createdByUserId)
-    {
-        throw new NotImplementedException();
+        return await query.ToListAsync();
     }
-
-    public Task<IEnumerable<Task>> GetByDueDate(DateTime dueDate)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<Task> GetById(int id)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<IEnumerable<Task>> GetByPriority(string priority)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<IEnumerable<Task>> GetByProjectId(int projectId)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<IEnumerable<Task>> GetByStatus(string status)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<IEnumerable<Task>> GetByUserId(string userId)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task SaveChanges()
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task Update(Task entity)
-    {
-        throw new NotImplementedException();
-    }
+    public Task SaveChanges() => dbContext.SaveChangesAsync();
 }

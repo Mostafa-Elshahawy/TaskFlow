@@ -1,12 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MediatR;
 
-namespace TaskFlow.Application.Tasks.Commands.UpdateTask
+namespace TaskFlow.Application.Tasks.Commands.UpdateTask;
+
+public class UpdateTaskCommand : IRequest
 {
-    internal class UpdateTaskCommand
-    {
-    }
+    public int Id { get; set; }
+    public string Title { get; set; } = default!;
+    public string Description { get; set; } = default!;
+    public string Status { get; set; } = "Pending";
+    public string Priority { get; set; } = "Normal";
+    public string UpdatedByUserId { get; set; } = default!;
+    public string UpdatedByName { get; set; } = default!;
+    public string? AssigneeId { get; set; }
+    public string? AssigneeName { get; set; }
+    public DateTime DueDate { get; set; }
 }
+

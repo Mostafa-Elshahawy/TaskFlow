@@ -2,7 +2,7 @@
 
 namespace TaskFlow.Domain.Entites;
 
-public class Task 
+public class TaskEntity
 {
     public int Id { get; set; }
 

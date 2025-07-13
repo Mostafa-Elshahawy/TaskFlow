@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MediatR;
 
-namespace TaskFlow.Application.Tasks.Commands.DeleteTask
+namespace TaskFlow.Application.Tasks.Commands.DeleteTask;
+
+public class DeleteTaskCommand(int id) : IRequest
 {
-    internal class DeleteTaskCommand
-    {
-    }
+    public int Id { get; set; } = id;
 }

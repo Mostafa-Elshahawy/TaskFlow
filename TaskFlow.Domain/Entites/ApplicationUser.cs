@@ -8,6 +8,6 @@ public class ApplicationUser : IdentityUser
     public ICollection<Organization> MemberOrganizations { get; set; } = default!;
     public ICollection<Project> AssignedProjects { get; set; } = default!;
     public ICollection<Project> ManagedProjects { get; set; } = default!;
-    public ICollection<Task> AssignedTasks { get; set; } = default!;
-    public ICollection<Task> CreatedTasks { get; set; } = default!;
+    public ICollection<TaskEntity> AssignedTasks { get; set; } = default!;
+    public ICollection<TaskEntity> CreatedTasks { get; set; } = default!;
 }

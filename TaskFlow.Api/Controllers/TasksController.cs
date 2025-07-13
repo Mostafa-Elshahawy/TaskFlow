@@ -2,11 +2,15 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TaskFlow.Application.Tasks.Commands.CreateTask;
+using TaskFlow.Application.Tasks.Commands.DeleteTask;
+using TaskFlow.Application.Tasks.Commands.UpdateTask;
+using TaskFlow.Application.Tasks.Queries.GetTaskById;
+using TaskFlow.Application.Tasks.Queries.GetTasks;
 
 namespace TaskFlow.Api.Controllers;
 
 [ApiController]
-[Route("api/tasks/{userId}/tasks")]
+[Route("api/tasks")]
 [Authorize]
 public class TasksController(IMediator _mediator) : ControllerBase
 {
@@ -21,11 +25,24 @@ public class TasksController(IMediator _mediator) : ControllerBase
     public async Task<IActionResult> GetTaskById(int id)
     {
         var result = await _mediator.Send(new GetTaskByIdQuery(id));
-        if (result == null)
-        {
-            return NotFound();
-        }
         return Ok(result);
+    }
+
+
+    [HttpPatch("{id}")]
+    public async Task<ActionResult> UpdateTask(int id, UpdateTaskCommand command)
+    {
+        command.Id = id;
+        await _mediator.Send(command);
+        return NoContent();
+    }
+
+
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> DeleteTask(int id)
+    {
+        await _mediator.Send(new DeleteTaskCommand(id));
+        return NoContent();
     }
 
     [HttpGet]
@@ -33,32 +50,5 @@ public class TasksController(IMediator _mediator) : ControllerBase
     {
         var result = await _mediator.Send(query);
         return Ok(result);
-    }
-
-    [HttpPatch("{id}/status")]
-    public async Task<ActionResult> UpdateTaskStatus(int id, UpdateTaskStatusCommand command)
-    {
-        if (id != command.Id)
-            return BadRequest();
-
-        await _mediator.Send(command);
-        return NoContent();
-    }
-
-    [HttpPatch("{id}/assignee")]
-    public async Task<ActionResult> AssignTask(int id, AssignTaskCommand command)
-    {
-        if (id != command.Id)
-            return BadRequest();
-
-        await _mediator.Send(command);
-        return NoContent();
-    }
-
-    [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteTask(int id)
-    {
-        await _mediator.Send(new DeleteTaskCommand { Id = id });
-        return NoContent();
     }
 }

@@ -17,7 +17,7 @@ public class Project
     public ApplicationUser CreatedBy { get; set; } = default!;
     public ICollection<ApplicationUser> Managers { get; set; } = default!;
     public ICollection<ApplicationUser> Members { get; set; } = default!;
-    public ICollection<Task> Tasks { get; set; } = default!;
+    public ICollection<TaskEntity> Tasks { get; set; } = default!;
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public bool isDeleted { get; set; }

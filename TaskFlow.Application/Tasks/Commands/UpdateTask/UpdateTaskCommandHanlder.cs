@@ -1,12 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using AutoMapper;
+using MediatR;
+using Microsoft.Extensions.Logging;
+using TaskFlow.Domain.Repositories;
 
-namespace TaskFlow.Application.Tasks.Commands.UpdateTask
+namespace TaskFlow.Application.Tasks.Commands.UpdateTask;
+
+public class UpdateTaskCommandHanlder(ILogger<UpdateTaskCommandHanlder> logger, ITaskRepository taskRepository, IMapper mapper)
+                : IRequestHandler<UpdateTaskCommand>
 {
-    internal class UpdateTaskCommandHanlder
+    public async Task Handle(UpdateTaskCommand request, CancellationToken cancellationToken)
     {
+        logger.LogInformation("Updating Task ID: {Id}", request.Id);
+        var task = await taskRepository.GetById(request.Id);
+        if (task == null)
+        {
+            throw new KeyNotFoundException($"Task with ID: {request.Id} not found");
+        }
+
+        mapper.Map(request, task);
+
+        await taskRepository.SaveChanges();
     }
 }

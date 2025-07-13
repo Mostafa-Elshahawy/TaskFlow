@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using TaskFlow.Domain.Entites;
-using Task = TaskFlow.Domain.Entites.Task;
 
 namespace TaskFlow.Infrastructure.Persistence;
 
@@ -11,7 +10,7 @@ internal class ApplicationDBContext : IdentityDbContext<ApplicationUser>
     {
     }
 
-    internal DbSet<Task> Tasks { get; set; }
+    internal DbSet<TaskEntity> Tasks { get; set; }
     internal DbSet<Project> Projects { get; set; }
     internal DbSet<Organization> Organizations { get; set; }
 
@@ -54,19 +53,19 @@ internal class ApplicationDBContext : IdentityDbContext<ApplicationUser>
             .UsingEntity(j => j.ToTable("ProjectMembers"));
 
         // Task relationships
-        modelBuilder.Entity<Task>()
+        modelBuilder.Entity<TaskEntity>()
             .HasOne(t => t.Project)
             .WithMany(p => p.Tasks)
             .HasForeignKey(t => t.ProjectId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<Task>()
+        modelBuilder.Entity<TaskEntity>()
             .HasOne(t => t.CreatedBy)
             .WithMany(u => u.CreatedTasks)
             .HasForeignKey(t => t.CreatedByUserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<Task>()
+        modelBuilder.Entity<TaskEntity>()
             .HasOne(t => t.Assignee)
             .WithMany(u => u.AssignedTasks)
             .HasForeignKey(t => t.AssigneeId)
@@ -75,6 +74,6 @@ internal class ApplicationDBContext : IdentityDbContext<ApplicationUser>
         // Configure soft delete query filters
         modelBuilder.Entity<Organization>().HasQueryFilter(o => !o.isDeleted);
         modelBuilder.Entity<Project>().HasQueryFilter(p => !p.isDeleted);
-        modelBuilder.Entity<Task>().HasQueryFilter(t => !t.isDeleted);
+        modelBuilder.Entity<TaskEntity>().HasQueryFilter(t => !t.isDeleted);
     }
 }
