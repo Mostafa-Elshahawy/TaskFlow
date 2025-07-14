@@ -11,20 +11,20 @@ namespace TaskFlow.Api.Controllers;
 
 [ApiController]
 [Route("api/tasks")]
-[Authorize]
-public class TasksController(IMediator _mediator) : ControllerBase
+//[Authorize]
+public class TasksController(IMediator mediator) : ControllerBase
 {
     [HttpPost]
     public async Task<IActionResult> CreateTask(CreateTaskCommand command)
     {
-        int id = await _mediator.Send(command);
+        int id = await mediator.Send(command);
         return CreatedAtAction(nameof(GetTaskById), new { id }, null);
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetTaskById(int id)
     {
-        var result = await _mediator.Send(new GetTaskByIdQuery(id));
+        var result = await mediator.Send(new GetTaskByIdQuery(id));
         return Ok(result);
     }
 
@@ -33,7 +33,7 @@ public class TasksController(IMediator _mediator) : ControllerBase
     public async Task<ActionResult> UpdateTask(int id, UpdateTaskCommand command)
     {
         command.Id = id;
-        await _mediator.Send(command);
+        await mediator.Send(command);
         return NoContent();
     }
 
@@ -41,14 +41,14 @@ public class TasksController(IMediator _mediator) : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteTask(int id)
     {
-        await _mediator.Send(new DeleteTaskCommand(id));
+        await mediator.Send(new DeleteTaskCommand(id));
         return NoContent();
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetTasks([FromQuery] GetTasksQuery query)
+    public async Task<IActionResult> GetFilteredTasks([FromQuery] GetTasksQuery query)
     {
-        var result = await _mediator.Send(query);
+        var result = await mediator.Send(query);
         return Ok(result);
     }
 }

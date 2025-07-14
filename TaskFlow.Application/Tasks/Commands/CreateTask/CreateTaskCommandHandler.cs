@@ -8,7 +8,7 @@ using TaskFlow.Domain.Repositories;
 
 namespace TaskFlow.Application.Tasks.Commands.CreateTask;
 
-internal class CreateTaskCommandHandler(ILogger logger,
+internal class CreateTaskCommandHandler(ILogger<CreateTaskCommandHandler> logger,
                                         ITaskRepository taskRepository,
                                         IMapper mapper,
                                         IUserContext userContext)

@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.Extensions.DependencyInjection;
+using TaskFlow.Application.Users;
 
 namespace TaskFlow.Application.Extensions;
 
@@ -13,6 +14,9 @@ public static class ServiceCollectionExtensions
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(ApplicationAssembly));
         services.AddAutoMapper(ApplicationAssembly);
         services.AddValidatorsFromAssembly(ApplicationAssembly).AddFluentValidationAutoValidation();
+
+        services.AddScoped<IUserContext, UserContext>();
+        services.AddHttpContextAccessor();
 
     }
 }

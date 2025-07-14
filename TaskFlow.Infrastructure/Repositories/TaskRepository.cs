@@ -1,11 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Linq;
 using TaskFlow.Application.Extensions;
 using TaskFlow.Domain.Constants;
 using TaskFlow.Domain.Entites;
 using TaskFlow.Domain.Repositories;
 using TaskFlow.Infrastructure.Persistence;
-using Task = System.Threading.Tasks.Task;
 
 namespace TaskFlow.Infrastructure.Repositories;
 

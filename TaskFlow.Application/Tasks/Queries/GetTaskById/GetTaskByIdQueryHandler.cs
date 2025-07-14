@@ -7,7 +7,7 @@ using TaskFlow.Domain.Repositories;
 
 namespace TaskFlow.Application.Tasks.Queries.GetTaskById;
 
-public class GetTaskByIdQueryHandler(ILogger logger, ITaskRepository taskRepository, IMapper mapper) : IRequestHandler<GetTaskByIdQuery, TaskDto>
+public class GetTaskByIdQueryHandler(ILogger<GetTaskByIdQueryHandler> logger, ITaskRepository taskRepository, IMapper mapper) : IRequestHandler<GetTaskByIdQuery, TaskDto>
 {
     public async Task<TaskDto> Handle(GetTaskByIdQuery request, CancellationToken cancellationToken)
     {
