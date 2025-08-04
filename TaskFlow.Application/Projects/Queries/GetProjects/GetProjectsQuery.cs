@@ -8,8 +8,7 @@ public class GetProjectsQuery : IRequest<IEnumerable<ProjectDto>>
     public int Id { set; get; }
     public string Name { set; get; } = default!;
     public string Description { set; get; } = default!;
-    public string CreatedById { set; get; } = default!;
-    public string UpdatedById { set; get; } = default!;
+    public string? CreatedByUserId { set; get; } = default!;
     public DateTime CreatedAt { set; get; }
     public DateTime? UpdatedAt { set; get; }
     public bool IsDeleted { set; get; } = false;
