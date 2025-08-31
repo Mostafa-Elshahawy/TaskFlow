@@ -1,6 +1,6 @@
 ﻿using MediatR;
 
-namespace TaskFlow.Application.Orgs.Commnads;
+namespace TaskFlow.Application.Orgs.Commnads.CreateOrganization;
 
 public class CreateOrgCommand : IRequest<int>
 {

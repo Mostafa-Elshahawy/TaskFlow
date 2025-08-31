@@ -5,7 +5,7 @@ using TaskFlow.Domain.Constants;
 using TaskFlow.Domain.Entites;
 using TaskFlow.Domain.Repositories;
 
-namespace TaskFlow.Application.Orgs.Commnads;
+namespace TaskFlow.Application.Orgs.Commnads.CreateOrganization;
 
 public class CreateOrgCommandHandler(ILogger<CreateOrgCommandHandler> logger, UserManager<ApplicationUser> userManager,
                                      IOrganizationRepository organizationRepository)
@@ -36,7 +36,16 @@ public class CreateOrgCommandHandler(ILogger<CreateOrgCommandHandler> logger, Us
             Name = request.Name,
             Description = request.Description,
             OwnerId = adminUser.Id,
-            Members = new List<ApplicationUser> { adminUser },
+            Members = new List<OrganizationMember>
+            {
+                new OrganizationMember
+                {
+                    UserId = adminUser.Id,
+                    User = adminUser,
+                    Role = OrganizationRole.Owner,
+                    JoinedAt = DateTime.UtcNow
+                }
+            },
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
             isDeleted = false

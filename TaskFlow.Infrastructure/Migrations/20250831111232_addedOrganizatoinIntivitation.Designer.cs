@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TaskFlow.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using TaskFlow.Infrastructure.Persistence;
 namespace TaskFlow.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20250831111232_addedOrganizatoinIntivitation")]
+    partial class addedOrganizatoinIntivitation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,6 +24,21 @@ namespace TaskFlow.Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("ApplicationUserOrganization", b =>
+                {
+                    b.Property<int>("MemberOrganizationsId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MembersId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("MemberOrganizationsId", "MembersId");
+
+                    b.HasIndex("MembersId");
+
+                    b.ToTable("OrganizationMembers", (string)null);
+                });
 
             modelBuilder.Entity("ApplicationUserProject", b =>
                 {
@@ -309,9 +327,6 @@ namespace TaskFlow.Infrastructure.Migrations
                     b.Property<int>("OrganizationId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Role")
-                        .HasColumnType("int");
-
                     b.Property<string>("Token")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -321,27 +336,6 @@ namespace TaskFlow.Infrastructure.Migrations
                     b.HasIndex("OrganizationId");
 
                     b.ToTable("OrganizationInvitations");
-                });
-
-            modelBuilder.Entity("TaskFlow.Domain.Entites.OrganizationMember", b =>
-                {
-                    b.Property<int>("OrganizationId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("JoinedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Role")
-                        .HasColumnType("int");
-
-                    b.HasKey("OrganizationId", "UserId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("OrganizationMembers");
                 });
 
             modelBuilder.Entity("TaskFlow.Domain.Entites.Project", b =>
@@ -447,6 +441,21 @@ namespace TaskFlow.Infrastructure.Migrations
                     b.ToTable("Tasks");
                 });
 
+            modelBuilder.Entity("ApplicationUserOrganization", b =>
+                {
+                    b.HasOne("TaskFlow.Domain.Entites.Organization", null)
+                        .WithMany()
+                        .HasForeignKey("MemberOrganizationsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TaskFlow.Domain.Entites.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("MembersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ApplicationUserProject", b =>
                 {
                     b.HasOne("TaskFlow.Domain.Entites.Project", null)
@@ -550,25 +559,6 @@ namespace TaskFlow.Infrastructure.Migrations
                     b.Navigation("Organization");
                 });
 
-            modelBuilder.Entity("TaskFlow.Domain.Entites.OrganizationMember", b =>
-                {
-                    b.HasOne("TaskFlow.Domain.Entites.Organization", "Organization")
-                        .WithMany("Members")
-                        .HasForeignKey("OrganizationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TaskFlow.Domain.Entites.ApplicationUser", "User")
-                        .WithMany("Organizations")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Organization");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("TaskFlow.Domain.Entites.Project", b =>
                 {
                     b.HasOne("TaskFlow.Domain.Entites.ApplicationUser", "CreatedBy")
@@ -620,16 +610,12 @@ namespace TaskFlow.Infrastructure.Migrations
 
                     b.Navigation("CreatedTasks");
 
-                    b.Navigation("Organizations");
-
                     b.Navigation("OwnedOrganizations");
                 });
 
             modelBuilder.Entity("TaskFlow.Domain.Entites.Organization", b =>
                 {
                     b.Navigation("Invitations");
-
-                    b.Navigation("Members");
 
                     b.Navigation("Projects");
                 });

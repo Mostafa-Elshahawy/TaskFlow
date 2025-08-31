@@ -13,7 +13,8 @@ internal class ApplicationDBContext : IdentityDbContext<ApplicationUser>
     internal DbSet<TaskEntity> Tasks { get; set; }
     internal DbSet<Project> Projects { get; set; }
     internal DbSet<Organization> Organizations { get; set; }
-
+    internal DbSet<OrganizationMember> OrganizationMembers { get; set; }
+    internal DbSet<OrganizationInvitation> OrganizationInvitations { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -24,10 +25,19 @@ internal class ApplicationDBContext : IdentityDbContext<ApplicationUser>
        .HasForeignKey(o => o.OwnerId)
        .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<Organization>()
-            .HasMany(o => o.Members)
-            .WithMany(u => u.MemberOrganizations)
-            .UsingEntity(j => j.ToTable("OrganizationMembers"));
+        // OrganizationMember relationships
+        modelBuilder.Entity<OrganizationMember>()
+            .HasKey(m => new { m.OrganizationId, m.UserId });
+
+        modelBuilder.Entity<OrganizationMember>()
+            .HasOne(m => m.Organization)
+            .WithMany(o => o.Members)
+            .HasForeignKey(m => m.OrganizationId);
+
+        modelBuilder.Entity<OrganizationMember>()
+            .HasOne(m => m.User)
+            .WithMany(u => u.Organizations)
+            .HasForeignKey(m => m.UserId);
 
         // Project relationships
         modelBuilder.Entity<Project>()
@@ -70,6 +80,11 @@ internal class ApplicationDBContext : IdentityDbContext<ApplicationUser>
             .WithMany(u => u.AssignedTasks)
             .HasForeignKey(t => t.AssigneeId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<OrganizationInvitation>()
+           .HasOne(i => i.Organization)
+           .WithMany(o => o.Invitations)
+           .HasForeignKey(i => i.OrganizationId);
 
         // Configure soft delete query filters
         modelBuilder.Entity<Organization>().HasQueryFilter(o => !o.isDeleted);
