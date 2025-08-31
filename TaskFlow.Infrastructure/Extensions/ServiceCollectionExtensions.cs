@@ -6,6 +6,7 @@ using TaskFlow.Domain.Entites;
 using TaskFlow.Domain.Repositories;
 using TaskFlow.Infrastructure.Persistence;
 using TaskFlow.Infrastructure.Repositories;
+using TaskFlow.Infrastructure.Seeders;
 
 namespace TaskFlow.Infrastructure.Extensions;
 
@@ -25,5 +26,7 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<ITaskRepository, TaskRepository>();
         services.AddScoped<IProjectRepository, ProjectRepository>();
+        services.AddScoped<IOrganizationRepository, OrganizationRepository>();
+        services.AddScoped<IRoleSeeder, RoleSeeder>();
     }
 }

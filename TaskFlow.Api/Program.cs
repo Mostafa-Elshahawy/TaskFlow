@@ -1,15 +1,17 @@
 using Scalar.AspNetCore;
+using System.Threading.Tasks;
 using TaskFlow.Api.Extensions;
 using TaskFlow.Api.Infrastructure;
 using TaskFlow.Application.Extensions;
 using TaskFlow.Domain.Entites;
 using TaskFlow.Infrastructure.Extensions;
+using TaskFlow.Infrastructure.Seeders;
 
 namespace TaskFlow
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +23,11 @@ namespace TaskFlow
             builder.Services.AddProblemDetails();
 
             var app = builder.Build();
+
+            var scope = app.Services.CreateScope();
+            var seeder = scope.ServiceProvider.GetRequiredService<IRoleSeeder>();
+
+            await seeder.SeedRoles();
 
             if (app.Environment.IsDevelopment())
             {

@@ -37,4 +37,18 @@ internal class ProjectRepository(ApplicationDBContext dBContext) : IProjectRepos
         dBContext.Remove(entity);
         await dBContext.SaveChangesAsync();
     }
+
+    public async Task AssignManagerToProject(ApplicationUser user, Project project)
+    {
+        project.Managers ??= new List<ApplicationUser>();
+        project.Managers.Add(user);
+
+        user.ManagedProjects ??= new List<Project>();
+        user.ManagedProjects.Add(project);
+
+        dBContext.Update(project);
+        dBContext.Update(user);
+
+        await dBContext.SaveChangesAsync();
+    }
 }
