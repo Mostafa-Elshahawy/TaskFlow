@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TaskFlow.Application.Tasks.Commands.AssignTask;
 using TaskFlow.Application.Tasks.Commands.CreateTask;
 using TaskFlow.Application.Tasks.Commands.DeleteTask;
 using TaskFlow.Application.Tasks.Commands.UpdateTask;
@@ -11,7 +12,7 @@ namespace TaskFlow.Api.Controllers;
 
 [ApiController]
 [Route("api/tasks")]
-//[Authorize]
+[Authorize]
 public class TasksController(IMediator mediator) : ControllerBase
 {
     [HttpPost]
@@ -50,5 +51,12 @@ public class TasksController(IMediator mediator) : ControllerBase
     {
         var result = await mediator.Send(query);
         return Ok(result);
+    }
+
+    [HttpPost("assign")]
+    public async Task<IActionResult> AssignTaskToMember([FromBody] AssignTaskCommand command)
+    {
+        await mediator.Send(command);
+        return Ok();
     }
 }

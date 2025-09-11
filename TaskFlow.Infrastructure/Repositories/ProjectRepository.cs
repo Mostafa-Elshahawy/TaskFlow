@@ -5,18 +5,18 @@ using TaskFlow.Infrastructure.Persistence;
 
 namespace TaskFlow.Infrastructure.Repositories;
 
-internal class ProjectRepository(ApplicationDBContext dBContext) : IProjectRepository
+internal class ProjectRepository(ApplicationDBContext dbContext) : IProjectRepository
 {
     public async Task<int> CreateProjectAsync(Project project)
     {
-        dBContext.Add(project);
-        await dBContext.SaveChangesAsync();
+        dbContext.Add(project);
+        await dbContext.SaveChangesAsync();
         return project.Id;
     }
 
     public async Task<Project?> GetProjectByIdAsync(int id)
     {
-        return await dBContext.Projects
+        return await dbContext.Projects
               .AsNoTracking()
               .Include(p => p.Tasks)
               .Include(p => p.Members)
@@ -25,7 +25,7 @@ internal class ProjectRepository(ApplicationDBContext dBContext) : IProjectRepos
 
     public async Task<IEnumerable<Project>> GetAllProjectsAsync()
     {
-        return await dBContext.Projects
+        return await dbContext.Projects
             .AsNoTracking()
             .Include(p => p.Tasks)
             .Include(p => p.Members)
@@ -34,21 +34,24 @@ internal class ProjectRepository(ApplicationDBContext dBContext) : IProjectRepos
 
     public async Task DeleteProjectAsync(Project entity)
     {
-        dBContext.Remove(entity);
-        await dBContext.SaveChangesAsync();
+        dbContext.Remove(entity);
+        await dbContext.SaveChangesAsync();
+    }
+
+    public async Task UpdateAsync(Project entity)
+    {
+        dbContext.Update(entity);
+        await dbContext.SaveChangesAsync();
     }
 
     public async Task AssignManagerToProject(ApplicationUser user, Project project)
     {
-        project.Managers ??= new List<ApplicationUser>();
-        project.Managers.Add(user);
+        project.Members.Add(new ProjectMember
+        {
+            ProjectId = project.Id,
+            UserId = user.Id,
+        });
 
-        user.ManagedProjects ??= new List<Project>();
-        user.ManagedProjects.Add(project);
-
-        dBContext.Update(project);
-        dBContext.Update(user);
-
-        await dBContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync();
     }
 }

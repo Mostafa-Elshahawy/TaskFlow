@@ -9,6 +9,12 @@ namespace TaskFlow.Infrastructure.Repositories;
 
 internal class TaskRepository(ApplicationDBContext dbContext) : ITaskRepository
 {
+    public Task AssignTask(TaskEntity task)
+    {
+        dbContext.Update(task);
+        return Task.CompletedTask;
+    }
+
     public async Task<int> Create(TaskEntity entity)
     {
       dbContext.Add(entity);

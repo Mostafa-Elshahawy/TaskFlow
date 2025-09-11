@@ -11,4 +11,5 @@ public interface ITaskRepository
     Task Delete(TaskEntity entity);
     Task<IEnumerable<TaskEntity>> GetFilteredTasks(TaskFilter taskFilter);
     Task SaveChanges();
+    Task AssignTask(TaskEntity task);
 }

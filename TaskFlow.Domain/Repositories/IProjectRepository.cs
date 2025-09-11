@@ -9,4 +9,5 @@ public interface IProjectRepository
     Task<IEnumerable<Project>> GetAllProjectsAsync();
     Task DeleteProjectAsync(Project project);
     Task AssignManagerToProject(ApplicationUser user, Project project);
+    Task UpdateAsync(Project entity);
 }

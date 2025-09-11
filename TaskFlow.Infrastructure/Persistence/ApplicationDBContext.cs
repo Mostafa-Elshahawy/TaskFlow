@@ -6,26 +6,26 @@ namespace TaskFlow.Infrastructure.Persistence;
 
 internal class ApplicationDBContext : IdentityDbContext<ApplicationUser>
 {
-    public ApplicationDBContext(DbContextOptions<ApplicationDBContext> options) : base(options)
-    {
-    }
+    public ApplicationDBContext(DbContextOptions<ApplicationDBContext> options) : base(options) { }
 
     internal DbSet<TaskEntity> Tasks { get; set; }
     internal DbSet<Project> Projects { get; set; }
+    internal DbSet<ProjectMember> ProjectMembers { get; set; }
+    internal DbSet<ProjectMananger> ProjectManagers { get; set; } 
     internal DbSet<Organization> Organizations { get; set; }
     internal DbSet<OrganizationMember> OrganizationMembers { get; set; }
     internal DbSet<OrganizationInvitation> OrganizationInvitations { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<Organization>()
-       .HasOne(o => o.Owner)
-       .WithMany(u => u.OwnedOrganizations)
-       .HasForeignKey(o => o.OwnerId)
-       .OnDelete(DeleteBehavior.Restrict);
+            .HasOne(o => o.Owner)
+            .WithMany(u => u.OwnedOrganizations)
+            .HasForeignKey(o => o.OwnerId)
+            .OnDelete(DeleteBehavior.Restrict);
 
-        // OrganizationMember relationships
         modelBuilder.Entity<OrganizationMember>()
             .HasKey(m => new { m.OrganizationId, m.UserId });
 
@@ -36,10 +36,9 @@ internal class ApplicationDBContext : IdentityDbContext<ApplicationUser>
 
         modelBuilder.Entity<OrganizationMember>()
             .HasOne(m => m.User)
-            .WithMany(u => u.Organizations)
+            .WithMany(u => u.OrganizationsMembers)
             .HasForeignKey(m => m.UserId);
 
-        // Project relationships
         modelBuilder.Entity<Project>()
             .HasOne(p => p.Organization)
             .WithMany(o => o.Projects)
@@ -48,21 +47,36 @@ internal class ApplicationDBContext : IdentityDbContext<ApplicationUser>
 
         modelBuilder.Entity<Project>()
             .HasOne(p => p.CreatedBy)
-            .WithMany() 
+            .WithMany()
             .HasForeignKey(p => p.CreatedByUserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<Project>()
-            .HasMany(p => p.Managers)
-            .WithMany(u => u.ManagedProjects)
-            .UsingEntity(j => j.ToTable("ProjectManagers"));
+        modelBuilder.Entity<ProjectMember>()
+            .HasKey(pm => new { pm.ProjectId, pm.UserId });
 
-        modelBuilder.Entity<Project>()
-            .HasMany(p => p.Members)
-            .WithMany(u => u.AssignedProjects)
-            .UsingEntity(j => j.ToTable("ProjectMembers"));
+        modelBuilder.Entity<ProjectMember>()
+            .HasOne(pm => pm.Project)
+            .WithMany(p => p.Members)
+            .HasForeignKey(pm => pm.ProjectId);
 
-        // Task relationships
+        modelBuilder.Entity<ProjectMember>()
+            .HasOne(pm => pm.User)
+            .WithMany(u => u.ProjectMemberships)
+            .HasForeignKey(pm => pm.UserId);
+
+        modelBuilder.Entity<ProjectMananger>()
+            .HasKey(pm => new { pm.ProjectId, pm.UserId });
+
+        modelBuilder.Entity<ProjectMananger>()
+            .HasOne(pm => pm.ManagedProject)
+            .WithMany()
+            .HasForeignKey(pm => pm.ProjectId);
+
+        modelBuilder.Entity<ProjectMananger>()
+            .HasOne(pm => pm.User)
+            .WithMany()
+            .HasForeignKey(pm => pm.UserId);
+
         modelBuilder.Entity<TaskEntity>()
             .HasOne(t => t.Project)
             .WithMany(p => p.Tasks)
@@ -82,11 +96,10 @@ internal class ApplicationDBContext : IdentityDbContext<ApplicationUser>
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<OrganizationInvitation>()
-           .HasOne(i => i.Organization)
-           .WithMany(o => o.Invitations)
-           .HasForeignKey(i => i.OrganizationId);
+            .HasOne(i => i.Organization)
+            .WithMany(o => o.Invitations)
+            .HasForeignKey(i => i.OrganizationId);
 
-        // Configure soft delete query filters
         modelBuilder.Entity<Organization>().HasQueryFilter(o => !o.isDeleted);
         modelBuilder.Entity<Project>().HasQueryFilter(p => !p.isDeleted);
         modelBuilder.Entity<TaskEntity>().HasQueryFilter(t => !t.isDeleted);
