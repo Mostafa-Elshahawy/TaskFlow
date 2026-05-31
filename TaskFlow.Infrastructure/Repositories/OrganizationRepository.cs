@@ -1,6 +1,4 @@
-﻿using AutoMapper.Execution;
-using Microsoft.EntityFrameworkCore;
-using System.Threading;
+﻿using Microsoft.EntityFrameworkCore;
 using TaskFlow.Domain.Entites;
 using TaskFlow.Domain.Repositories;
 using TaskFlow.Infrastructure.Persistence;
@@ -24,6 +22,13 @@ internal class OrganizationRepository(ApplicationDBContext dBContext) : IOrganiz
         dBContext.Add(organization);
         await dBContext.SaveChangesAsync();
         return organization.Id;
+    }
+
+    public async Task<IEnumerable<Organization>> GetAllAsync()
+    {
+        return await dBContext.Organizations
+            .AsNoTracking()
+            .ToListAsync();
     }
 
     public async Task<Organization?> GetByIdAsync(int id)

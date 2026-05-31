@@ -1,9 +1,11 @@
+using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using TaskFlow.Api.Extensions;
 using TaskFlow.Api.Infrastructure;
 using TaskFlow.Application.Extensions;
 using TaskFlow.Domain.Entites;
 using TaskFlow.Infrastructure.Extensions;
+using TaskFlow.Infrastructure.Persistence;
 using TaskFlow.Infrastructure.Seeders;
 
 namespace TaskFlow
@@ -24,9 +26,11 @@ namespace TaskFlow
 
             var app = builder.Build();
 
-            var scope = app.Services.CreateScope();
-            var seeder = scope.ServiceProvider.GetRequiredService<IRoleSeeder>();
+            await using var scope = app.Services.CreateAsyncScope();
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDBContext>();
+            await db.Database.MigrateAsync();
 
+            var seeder = scope.ServiceProvider.GetRequiredService<IRoleSeeder>();
             await seeder.SeedRoles();
 
             if (app.Environment.IsDevelopment())
@@ -41,6 +45,8 @@ namespace TaskFlow
             }
 
             app.UseHttpsRedirection();
+
+            app.UseCors("Angular");
 
             app.UseAuthentication();
             app.UseAuthorization();

@@ -4,7 +4,7 @@ using TaskFlow.Domain.Entites;
 
 namespace TaskFlow.Infrastructure.Persistence;
 
-internal class ApplicationDBContext : IdentityDbContext<ApplicationUser>
+public class ApplicationDBContext : IdentityDbContext<ApplicationUser>
 {
     public ApplicationDBContext(DbContextOptions<ApplicationDBContext> options) : base(options) { }
 

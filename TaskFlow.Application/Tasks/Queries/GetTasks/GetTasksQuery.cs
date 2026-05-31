@@ -1,16 +1,16 @@
-﻿using MediatR;
+using MediatR;
 using TaskFlow.Application.Tasks.Dtos;
-using TaskFlow.Domain.Entites;
+using TaskStatus = TaskFlow.Domain.Entites.TaskStatus;
+using TaskPriority = TaskFlow.Domain.Entites.TaskPriority;
 
 namespace TaskFlow.Application.Tasks.Queries.GetTasks;
 
 public class GetTasksQuery : IRequest<List<TaskDto>>
 {
     public int? ProjectId { get; set; }
-    public Domain.Entites.TaskStatus Status { get; set; }
-    public TaskPriority Priority { get; set; }
+    public TaskStatus? Status { get; set; }
+    public TaskPriority? Priority { get; set; }
     public string? AssigneeId { get; set; }
-    public string? SearchTerm { get; set; }
     public DateTime? DueBefore { get; set; }
     public DateTime? DueAfter { get; set; }
 }

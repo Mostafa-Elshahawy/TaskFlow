@@ -1,0 +1,227 @@
+@use '@angular/material' as mat;
+
+html {
+  @include mat.theme((
+    color: (
+      primary: mat.$azure-palette,
+      theme-type: light,
+    ),
+    typography: Roboto,
+    density: 0,
+  ));
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
+  background: #f5f7fa;
+  color: #1a2332;
+}
+
+mat-card {
+  background: #ffffff !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06) !important;
+  border-radius: 12px !important;
+  border: 1px solid #e8ecf0 !important;
+}
+
+mat-card-title {
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  color: #1a2332 !important;
+}
+
+.auth-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(145deg, #0f1923 0%, #1a3a5c 100%);
+}
+
+.auth-logo {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 8px;
+
+  mat-icon {
+    font-size: 42px;
+    width: 42px;
+    height: 42px;
+    color: #4a9eff;
+  }
+}
+
+.auth-card {
+  width: 400px;
+  background: #ffffff !important;
+
+  mat-card-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 28px 24px 4px;
+
+    mat-card-subtitle {
+      color: #4a9eff !important;
+      font-weight: 700 !important;
+      letter-spacing: 3px !important;
+      text-transform: uppercase !important;
+      font-size: 10px !important;
+      margin-bottom: 4px !important;
+    }
+
+    mat-card-title {
+      font-size: 24px !important;
+      font-weight: 700 !important;
+      color: #1a2332 !important;
+    }
+  }
+
+  mat-card-content {
+    padding: 20px 24px 8px !important;
+  }
+
+  mat-card-actions {
+    padding: 8px 24px 24px !important;
+    text-align: center;
+
+    a {
+      font-size: 13px;
+      color: #4a9eff;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+.page-container {
+  padding: 28px 32px;
+  max-width: 1200px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+
+  h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a2332;
+  }
+}
+
+.full-width {
+  width: 100%;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.form-card {
+  margin-bottom: 20px;
+
+  mat-card-content {
+    padding-top: 8px !important;
+  }
+}
+
+.form-row {
+  display: flex;
+  gap: 12px;
+
+  .flex-1 {
+    flex: 1;
+  }
+}
+
+.filter-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 8px 0;
+
+  mat-form-field {
+    min-width: 160px;
+  }
+}
+
+.cards-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+
+  mat-card {
+    flex: 1;
+    min-width: 280px;
+  }
+}
+
+.form-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #8a9bb0;
+  font-size: 14px;
+}
+
+.subtitle {
+  color: #5a6a7e;
+  margin-top: -8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+table.full-width {
+  width: 100%;
+  background: #fff;
+}
+
+.mat-mdc-header-row {
+  background: #f8fafc !important;
+}
+
+th.mat-mdc-header-cell {
+  font-weight: 700 !important;
+  color: #5a6a7e !important;
+  font-size: 11px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  border-bottom: 2px solid #e8ecf0 !important;
+}
+
+td.mat-mdc-cell {
+  color: #2d3d50 !important;
+  font-size: 14px !important;
+  border-bottom: 1px solid #f0f3f7 !important;
+}
+
+tr.mat-mdc-row:hover td {
+  background: #f5f8ff !important;
+}
+
+mat-expansion-panel {
+  background: #fff !important;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06) !important;
+  border: 1px solid #e8ecf0 !important;
+  margin-bottom: 16px;
+}
+
+mat-expansion-panel-header {
+  font-weight: 600 !important;
+  color: #1a2332 !important;
+}

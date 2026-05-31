@@ -18,6 +18,7 @@ internal class ProjectRepository(ApplicationDBContext dbContext) : IProjectRepos
     {
         return await dbContext.Projects
               .AsNoTracking()
+              .Include(p => p.CreatedBy)
               .Include(p => p.Tasks)
               .Include(p => p.Members)
               .FirstOrDefaultAsync(p => p.Id == id);
@@ -27,6 +28,7 @@ internal class ProjectRepository(ApplicationDBContext dbContext) : IProjectRepos
     {
         return await dbContext.Projects
             .AsNoTracking()
+            .Include(p => p.CreatedBy)
             .Include(p => p.Tasks)
             .Include(p => p.Members)
             .ToListAsync();

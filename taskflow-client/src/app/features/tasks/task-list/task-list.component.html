@@ -1,0 +1,250 @@
+<div class="page-container">
+  <div class="page-header">
+    <h2>Tasks</h2>
+    <button mat-raised-button color="primary" (click)="showCreateForm = !showCreateForm">
+      <mat-icon>{{ showCreateForm ? 'close' : 'add' }}</mat-icon>
+      {{ showCreateForm ? 'Cancel' : 'New Task' }}
+    </button>
+  </div>
+
+  @if (showCreateForm) {
+    <mat-card class="form-card">
+      <mat-card-header><mat-card-title>Create Task</mat-card-title></mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="createForm" (ngSubmit)="create()">
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="flex-1">
+              <mat-label>Title</mat-label>
+              <input matInput formControlName="title" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="flex-1">
+              <mat-label>Project</mat-label>
+              <mat-select formControlName="projectId">
+                @for (p of projects; track p.id) {
+                  <mat-option [value]="p.id">{{ p.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Description</mat-label>
+            <textarea matInput formControlName="description" rows="2"></textarea>
+          </mat-form-field>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="flex-1">
+              <mat-label>Status</mat-label>
+              <mat-select formControlName="status">
+                @for (opt of statusOptions; track opt.value) {
+                  <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="flex-1">
+              <mat-label>Priority</mat-label>
+              <mat-select formControlName="priority">
+                @for (opt of priorityOptions; track opt.value) {
+                  <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="flex-1">
+              <mat-label>Due Date</mat-label>
+              <input matInput type="date" formControlName="dueDate" />
+            </mat-form-field>
+          </div>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Assignee (optional)</mat-label>
+            <mat-select formControlName="assigneeId">
+              <mat-option [value]="null">— None —</mat-option>
+              @for (u of users; track u.id) {
+                <mat-option [value]="u.id">{{ u.email }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <button mat-raised-button color="primary" type="submit" [disabled]="createForm.invalid">Create Task</button>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <mat-expansion-panel>
+    <mat-expansion-panel-header><mat-panel-title>Filters</mat-panel-title></mat-expansion-panel-header>
+    <form [formGroup]="filterForm" class="filter-form">
+      <mat-form-field appearance="outline">
+        <mat-label>Project</mat-label>
+        <mat-select formControlName="projectId">
+          <mat-option [value]="null">All</mat-option>
+          @for (p of projects; track p.id) {
+            <mat-option [value]="p.id">{{ p.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Status</mat-label>
+        <mat-select formControlName="status">
+          <mat-option [value]="null">All</mat-option>
+          @for (opt of statusOptions; track opt.value) {
+            <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Priority</mat-label>
+        <mat-select formControlName="priority">
+          <mat-option [value]="null">All</mat-option>
+          @for (opt of priorityOptions; track opt.value) {
+            <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Assignee</mat-label>
+        <mat-select formControlName="assigneeId">
+          <mat-option [value]="null">All</mat-option>
+          @for (u of users; track u.id) {
+            <mat-option [value]="u.id">{{ u.email }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <button mat-raised-button color="primary" (click)="load()">Apply</button>
+      <button mat-button (click)="filterForm.reset(); load()">Clear</button>
+    </form>
+  </mat-expansion-panel>
+
+  <mat-card style="margin-top: 16px;">
+    <mat-card-content>
+      <table mat-table [dataSource]="dataSource" class="full-width">
+        <ng-container matColumnDef="title">
+          <th mat-header-cell *matHeaderCellDef>Title</th>
+          <td mat-cell *matCellDef="let t">{{ t.title }}</td>
+        </ng-container>
+        <ng-container matColumnDef="project">
+          <th mat-header-cell *matHeaderCellDef>Project</th>
+          <td mat-cell *matCellDef="let t">{{ t.projectName }}</td>
+        </ng-container>
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let t"><mat-chip>{{ statusLabel(t.status) }}</mat-chip></td>
+        </ng-container>
+        <ng-container matColumnDef="priority">
+          <th mat-header-cell *matHeaderCellDef>Priority</th>
+          <td mat-cell *matCellDef="let t">
+            <mat-chip [color]="priorityColor(t.priority)" highlighted>{{ priorityLabel(t.priority) }}</mat-chip>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="assignee">
+          <th mat-header-cell *matHeaderCellDef>Assignee</th>
+          <td mat-cell *matCellDef="let t">{{ t.assigneeName || '—' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="dueDate">
+          <th mat-header-cell *matHeaderCellDef>Due</th>
+          <td mat-cell *matCellDef="let t">{{ t.dueDate | date:'mediumDate' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let t">
+            <button mat-icon-button (click)="startEdit(t)"><mat-icon>edit</mat-icon></button>
+            <button mat-icon-button color="warn" (click)="delete(t.id)"><mat-icon>delete</mat-icon></button>
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+      @if (dataSource.data.length === 0) {
+        <p class="empty-state">No tasks found.</p>
+      }
+    </mat-card-content>
+  </mat-card>
+
+  @if (editingTask) {
+    <mat-card class="form-card" style="margin-top: 16px;">
+      <mat-card-header><mat-card-title>Edit: {{ editingTask.title }}</mat-card-title></mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="editForm" (ngSubmit)="saveEdit()">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Title</mat-label>
+            <input matInput formControlName="title" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Description</mat-label>
+            <textarea matInput formControlName="description" rows="2"></textarea>
+          </mat-form-field>
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="flex-1">
+              <mat-label>Status</mat-label>
+              <mat-select formControlName="status">
+                @for (opt of statusOptions; track opt.value) {
+                  <mat-option [value]="opt.label">{{ opt.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="flex-1">
+              <mat-label>Priority</mat-label>
+              <mat-select formControlName="priority">
+                @for (opt of priorityOptions; track opt.value) {
+                  <mat-option [value]="opt.label">{{ opt.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="flex-1">
+              <mat-label>Due Date</mat-label>
+              <input matInput type="date" formControlName="dueDate" />
+            </mat-form-field>
+          </div>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Assignee</mat-label>
+            <mat-select formControlName="assigneeId">
+              <mat-option [value]="null">— None —</mat-option>
+              @for (u of users; track u.id) {
+                <mat-option [value]="u.id">{{ u.email }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <div class="form-actions">
+            <button mat-raised-button color="primary" type="submit">Save</button>
+            <button mat-button type="button" (click)="editingTask = undefined">Cancel</button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <mat-card class="form-card" style="margin-top: 16px;">
+    <mat-card-header><mat-card-title>Assign Task (Manager)</mat-card-title></mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="assignForm" (ngSubmit)="assign()">
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>Task</mat-label>
+            <mat-select formControlName="taskId">
+              @for (t of dataSource.data; track t.id) {
+                <mat-option [value]="t.id">{{ t.title }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>Assign to</mat-label>
+            <mat-select formControlName="assigneeId">
+              @for (u of users; track u.id) {
+                <mat-option [value]="u.id">{{ u.email }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>Assigned by (you)</mat-label>
+            <mat-select formControlName="assignedById">
+              @for (u of users; track u.id) {
+                <mat-option [value]="u.id">{{ u.email }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <button mat-raised-button color="accent" type="submit" [disabled]="assignForm.invalid">Assign</button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

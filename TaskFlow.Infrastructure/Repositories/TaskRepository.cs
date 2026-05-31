@@ -30,15 +30,18 @@ internal class TaskRepository(ApplicationDBContext dbContext) : ITaskRepository
 
     public async Task<TaskEntity?> GetById(int id)
     {
-        var task = await dbContext.Tasks.FirstOrDefaultAsync(t => t.Id == id);
-
-        return task;
+        return await dbContext.Tasks
+            .Include(t => t.CreatedBy)
+            .Include(t => t.Assignee)
+            .Include(t => t.Project)
+            .FirstOrDefaultAsync(t => t.Id == id);
     }
 
     public async Task<IEnumerable<TaskEntity>> GetFilteredTasks(TaskFilter taskFilter)
     {
         var query = dbContext.Tasks
         .AsNoTracking()
+        .Include(t => t.CreatedBy)
         .Include(t => t.Assignee)
         .Include(t => t.Project)
         .AsQueryable();

@@ -5,6 +5,7 @@ namespace TaskFlow.Domain.Repositories;
 public interface IOrganizationRepository
 {
     Task<int> CreateOrganization(Organization organization);
+    Task<IEnumerable<Organization>> GetAllAsync();
     Task<Organization?> GetByIdAsync(int id);
     Task AddMemberAsync(OrganizationMember member);
     Task AddInvitationAsync(OrganizationInvitation invitation);
