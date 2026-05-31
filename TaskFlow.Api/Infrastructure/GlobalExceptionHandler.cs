@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using TaskFlow.Domain.Exceptions;
 
 namespace TaskFlow.Api.Infrastructure;
 
@@ -11,20 +12,31 @@ public class GlobalExceptionHandler : IExceptionHandler
     {
         _logger = logger;
     }
+
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
-        _logger.LogError(exception, "An unhandled exception occurred: {Message}", exception.Message);
+        var (statusCode, title) = exception switch
+        {
+            NotFoundException => (StatusCodes.Status404NotFound, "Resource not found."),
+            ForbidException => (StatusCodes.Status403Forbidden, "Access denied."),
+            UnauthorizedAccessException => (StatusCodes.Status403Forbidden, "Access denied."),
+            _ => (StatusCodes.Status500InternalServerError, "An error occurred while processing your request.")
+        };
+
+        if (statusCode == StatusCodes.Status500InternalServerError)
+            _logger.LogError(exception, "Unhandled exception: {Message}", exception.Message);
+        else
+            _logger.LogWarning("Handled exception [{StatusCode}]: {Message}", statusCode, exception.Message);
 
         var problemDetails = new ProblemDetails
         {
-            Title = "An error occurred while processing your request.",
-            Status = StatusCodes.Status500InternalServerError,
+            Title = title,
+            Status = statusCode,
             Detail = exception.Message,
             Instance = httpContext.Request.Path
         };
 
-        httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
-
+        httpContext.Response.StatusCode = statusCode;
         await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
 
         return true;

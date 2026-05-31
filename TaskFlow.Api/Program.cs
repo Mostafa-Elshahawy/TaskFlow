@@ -1,13 +1,9 @@
-using Microsoft.Extensions.Options;
 using Scalar.AspNetCore;
 using TaskFlow.Api.Extensions;
 using TaskFlow.Api.Infrastructure;
 using TaskFlow.Application.Extensions;
-using TaskFlow.Domain.Constants;
 using TaskFlow.Domain.Entites;
-using TaskFlow.Domain.Repositories;
 using TaskFlow.Infrastructure.Extensions;
-using TaskFlow.Infrastructure.Repositories;
 using TaskFlow.Infrastructure.Seeders;
 
 namespace TaskFlow
@@ -24,11 +20,6 @@ namespace TaskFlow
 
             builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
             builder.Services.AddProblemDetails();
-
-            builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("Smtp"));
-            builder.Services.AddSingleton<SmtpSettings>(sp =>
-                sp.GetRequiredService<IOptions<SmtpSettings>>().Value);
-            builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 
 
             var app = builder.Build();

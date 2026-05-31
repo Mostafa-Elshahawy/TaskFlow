@@ -15,9 +15,9 @@ namespace TaskFlow.Api.Controllers;
 public class ProjectsController(IMediator mediator) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetAllProjects(GetProjectsQuery query)
+    public async Task<IActionResult> GetAllProjects([FromQuery] GetProjectsQuery query)
     {
-        var result = await mediator.Send(new GetProjectsQuery());
+        var result = await mediator.Send(query);
         return Ok(result);
     }
 

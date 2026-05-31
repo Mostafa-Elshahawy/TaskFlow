@@ -12,6 +12,7 @@ public class TasksProfile : Profile
             .ForMember(dest => dest.Project, opt => opt.Ignore())
             .ForMember(dest => dest.Assignee, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedByUserId, opt => opt.Ignore())
             .ForMember(dest => dest.CompletedAt, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.isDeleted, opt => opt.MapFrom(_ => false))

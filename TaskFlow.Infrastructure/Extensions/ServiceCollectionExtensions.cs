@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using TaskFlow.Domain.Constants;
 using TaskFlow.Domain.Entites;
 using TaskFlow.Domain.Repositories;
 using TaskFlow.Infrastructure.Persistence;
@@ -14,9 +16,9 @@ public static class ServiceCollectionExtensions
 {
     public static void AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        var ConnectionString = configuration.GetConnectionString("TaskFlowDB");
+        var connectionString = configuration.GetConnectionString("TaskFlowDB");
         services.AddDbContext<ApplicationDBContext>(options =>
-            options.UseSqlServer(ConnectionString));
+            options.UseSqlServer(connectionString));
 
         services.AddIdentityApiEndpoints<ApplicationUser>()
               .AddRoles<IdentityRole>()
@@ -28,5 +30,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IProjectRepository, ProjectRepository>();
         services.AddScoped<IOrganizationRepository, OrganizationRepository>();
         services.AddScoped<IRoleSeeder, RoleSeeder>();
+
+        services.Configure<SmtpSettings>(configuration.GetSection("Smtp"));
+        services.AddSingleton(sp => sp.GetRequiredService<IOptions<SmtpSettings>>().Value);
+        services.AddScoped<IEmailSender, SmtpEmailSender>();
     }
 }

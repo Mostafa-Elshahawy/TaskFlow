@@ -16,14 +16,16 @@ internal class CreateTaskCommandHandler(ILogger<CreateTaskCommandHandler> logger
 {
     public async Task<int> Handle(CreateTaskCommand request, CancellationToken cancellationToken)
     {
-        var currentUser = userContext.GetCurrentUser();
+        var currentUser = userContext.GetCurrentUser()
+            ?? throw new InvalidOperationException("Authenticated user context is missing.");
 
-        logger.LogInformation("{UserEmail} [{UserId}] is creating a new task {@Task}", 
-            currentUser?.Email,
-            currentUser?.Id,
+        logger.LogInformation("{UserEmail} [{UserId}] is creating a new task {@Task}",
+            currentUser.Email,
+            currentUser.Id,
             request);
 
         var task = mapper.Map<TaskEntity>(request);
+        task.CreatedByUserId = currentUser.Id;
 
         int id = await taskRepository.Create(task);
         return id;
