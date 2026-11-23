@@ -2,7 +2,7 @@ services:
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
-      SA_PASSWORD: "TaskFlow@2024!"
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD in .env}"
       ACCEPT_EULA: "Y"
       MSSQL_PID: "Express"
     ports:
@@ -10,7 +10,7 @@ services:
     volumes:
       - sqldata:/var/opt/mssql
     healthcheck:
-      test: ["CMD", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "TaskFlow@2024!", "-No", "-Q", "SELECT 1"]
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -No -Q \"SELECT 1\""]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -23,9 +23,14 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Docker
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__TaskFlowDB: "Server=db,1433;Database=TaskFlowDB;User Id=sa;Password=TaskFlow@2024!;TrustServerCertificate=True;"
+      ConnectionStrings__TaskFlowDB: "Server=db,1433;Database=TaskFlowDB;User Id=sa;Password=${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD in .env};TrustServerCertificate=True;"
+      BootstrapAdmin__Email: "${BOOTSTRAP_ADMIN_EMAIL:-}"
+      BootstrapAdmin__Password: "${BOOTSTRAP_ADMIN_PASSWORD:-}"
+      Invitation__ClientBaseUrl: "${CLIENT_BASE_URL:-http://localhost:4200}"
     ports:
       - "5000:8080"
+    volumes:
+      - dataprotectionkeys:/root/.aspnet/DataProtection-Keys
     depends_on:
       db:
         condition: service_healthy
@@ -41,3 +46,4 @@ services:
 
 volumes:
   sqldata:
+  dataprotectionkeys:
