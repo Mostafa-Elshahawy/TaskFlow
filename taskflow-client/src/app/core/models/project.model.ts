@@ -29,5 +29,4 @@ export interface AddMemberRequest {
 
 export interface PromoteManagerRequest {
   userId: string;
-  projectId: number;
 }

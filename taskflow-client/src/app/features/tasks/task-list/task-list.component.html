@@ -178,7 +178,7 @@
               <mat-label>Status</mat-label>
               <mat-select formControlName="status">
                 @for (opt of statusOptions; track opt.value) {
-                  <mat-option [value]="opt.label">{{ opt.label }}</mat-option>
+                  <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
                 }
               </mat-select>
             </mat-form-field>
@@ -186,7 +186,7 @@
               <mat-label>Priority</mat-label>
               <mat-select formControlName="priority">
                 @for (opt of priorityOptions; track opt.value) {
-                  <mat-option [value]="opt.label">{{ opt.label }}</mat-option>
+                  <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
                 }
               </mat-select>
             </mat-form-field>
@@ -195,15 +195,6 @@
               <input matInput type="date" formControlName="dueDate" />
             </mat-form-field>
           </div>
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Assignee</mat-label>
-            <mat-select formControlName="assigneeId">
-              <mat-option [value]="null">— None —</mat-option>
-              @for (u of users; track u.id) {
-                <mat-option [value]="u.id">{{ u.email }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
           <div class="form-actions">
             <button mat-raised-button color="primary" type="submit">Save</button>
             <button mat-button type="button" (click)="editingTask = undefined">Cancel</button>
@@ -229,14 +220,6 @@
           <mat-form-field appearance="outline" class="flex-1">
             <mat-label>Assign to</mat-label>
             <mat-select formControlName="assigneeId">
-              @for (u of users; track u.id) {
-                <mat-option [value]="u.id">{{ u.email }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-          <mat-form-field appearance="outline" class="flex-1">
-            <mat-label>Assigned by (you)</mat-label>
-            <mat-select formControlName="assignedById">
               @for (u of users; track u.id) {
                 <mat-option [value]="u.id">{{ u.email }}</mat-option>
               }

@@ -41,10 +41,8 @@ export interface CreateTaskRequest {
 export interface UpdateTaskRequest {
   title: string;
   description: string;
-  status: string;
-  priority: string;
-  assigneeId?: string;
-  assigneeName?: string;
+  status: TaskStatus;
+  priority: TaskPriority;
   dueDate: string;
 }
 
@@ -60,5 +58,4 @@ export interface TaskFilter {
 export interface AssignTaskRequest {
   taskId: number;
   assigneeId: string;
-  assignedById: string;
 }

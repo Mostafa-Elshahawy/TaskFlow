@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -28,6 +28,7 @@ export class LoginComponent {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private snack = inject(MatSnackBar);
 
   form = this.fb.group({
@@ -40,11 +41,18 @@ export class LoginComponent {
     if (this.form.invalid) return;
     this.loading = true;
     this.auth.login(this.form.value as any).subscribe({
-      next: () => this.router.navigate(['/tasks']),
+      next: () => this.router.navigateByUrl(this.getSafeReturnUrl()),
       error: () => {
         this.snack.open('Invalid credentials', 'Close', { duration: 3000 });
         this.loading = false;
       }
     });
+  }
+
+  private getSafeReturnUrl(): string {
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    return returnUrl?.startsWith('/') && !returnUrl.startsWith('//')
+      ? returnUrl
+      : '/tasks';
   }
 }

@@ -40,18 +40,12 @@ export class OrgListComponent implements OnInit {
 
   form = this.fb.group({
     name: ['', Validators.required],
-    description: ['', Validators.required],
-    adminEmail: ['', [Validators.required, Validators.email]],
-    adminPassword: ['', [Validators.required, Validators.minLength(6)]]
+    description: ['', Validators.required]
   });
 
   inviteForm = this.fb.group({
     organizationId: [null as number | null, Validators.required],
     email: ['', [Validators.required, Validators.email]]
-  });
-
-  acceptForm = this.fb.group({
-    token: ['', Validators.required]
   });
 
   ngOnInit() {
@@ -89,15 +83,4 @@ export class OrgListComponent implements OnInit {
     });
   }
 
-  acceptInvite() {
-    if (this.acceptForm.invalid) return;
-    this.orgService.acceptInvite(this.acceptForm.value.token!).subscribe({
-      next: () => {
-        this.snack.open('Invitation accepted', 'Close', { duration: 3000 });
-        this.acceptForm.reset();
-        this.load();
-      },
-      error: (err) => this.snack.open(err?.error?.detail || 'Failed', 'Close', { duration: 3000 })
-    });
-  }
 }

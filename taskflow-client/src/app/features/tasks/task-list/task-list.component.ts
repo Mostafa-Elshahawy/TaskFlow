@@ -86,17 +86,14 @@ export class TaskListComponent implements OnInit {
   editForm = this.fb.group({
     title: ['', Validators.required],
     description: ['', Validators.required],
-    status: [''],
-    priority: [''],
-    assigneeId: [null as string | null],
-    assigneeName: [''],
+    status: [TaskStatus.Open, Validators.required],
+    priority: [TaskPriority.Low, Validators.required],
     dueDate: ['', Validators.required]
   });
 
   assignForm = this.fb.group({
     taskId: [null as number | null, Validators.required],
-    assigneeId: [null as string | null, Validators.required],
-    assignedById: [null as string | null, Validators.required]
+    assigneeId: [null as string | null, Validators.required]
   });
 
   ngOnInit() {
@@ -146,10 +143,8 @@ export class TaskListComponent implements OnInit {
     this.editForm.patchValue({
       title: task.title,
       description: task.description,
-      status: TaskStatus[task.status],
-      priority: TaskPriority[task.priority],
-      assigneeId: task.assigneeId ?? null,
-      assigneeName: task.assigneeName ?? '',
+      status: task.status,
+      priority: task.priority,
       dueDate: task.dueDate.substring(0, 10)
     });
   }

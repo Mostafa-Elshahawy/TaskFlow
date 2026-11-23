@@ -9,8 +9,6 @@ export interface OrganizationDto {
 export interface CreateOrgRequest {
   name: string;
   description: string;
-  adminEmail: string;
-  adminPassword: string;
 }
 
 export interface InviteMemberRequest {

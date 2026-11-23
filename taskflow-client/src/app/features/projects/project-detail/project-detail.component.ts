@@ -60,7 +60,7 @@ export class ProjectDetailComponent implements OnInit {
   promote() {
     if (this.promoteForm.invalid) return;
     this.projectService
-      .promoteToManager({ userId: this.promoteForm.value.userId!, projectId: this.projectId })
+      .promoteToManager({ userId: this.promoteForm.value.userId! })
       .subscribe({
         next: () => {
           this.snack.open('User promoted to manager', 'Close', { duration: 3000 });

@@ -22,6 +22,6 @@ export class OrgService {
   }
 
   acceptInvite(token: string) {
-    return this.http.get(`${this.base}/accept-invite`, { params: { token } });
+    return this.http.post<void>(`${this.base}/accept-invite`, { token });
   }
 }

@@ -13,6 +13,7 @@ export const routes: Routes = [
       { path: 'projects', loadComponent: () => import('./features/projects/project-list/project-list.component').then(m => m.ProjectListComponent) },
       { path: 'projects/:id', loadComponent: () => import('./features/projects/project-detail/project-detail.component').then(m => m.ProjectDetailComponent) },
       { path: 'organizations', loadComponent: () => import('./features/organizations/org-list/org-list.component').then(m => m.OrgListComponent) },
+      { path: 'accept-invite', loadComponent: () => import('./features/organizations/accept-invite/accept-invite.component').then(m => m.AcceptInviteComponent) },
       { path: 'users', loadComponent: () => import('./features/users/user-list.component').then(m => m.UserListComponent) },
       { path: '', redirectTo: 'tasks', pathMatch: 'full' }
     ]

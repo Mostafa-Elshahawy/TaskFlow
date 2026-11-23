@@ -36,7 +36,7 @@ export class ProjectService {
   }
 
   addMember(request: AddMemberRequest) {
-    return this.http.post(`${this.base}/members`, request);
+    return this.http.post(`${this.base}/${request.projectId}/members`, request);
   }
 
   promoteToManager(request: PromoteManagerRequest) {
