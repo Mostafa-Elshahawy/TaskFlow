@@ -1,13 +1,18 @@
-﻿using AutoMapper;
+using AutoMapper;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using TaskFlow.Application.Authorization;
 using TaskFlow.Application.Tasks.Dtos;
 using TaskFlow.Domain.Constants;
 using TaskFlow.Domain.Repositories;
 
 namespace TaskFlow.Application.Tasks.Queries.GetTasks;
 
-public class GetTasksQueryHandler(ILogger<GetTasksQueryHandler> logger, IMapper mapper, ITaskRepository taskRepository) : IRequestHandler<GetTasksQuery, List<TaskDto>>
+public class GetTasksQueryHandler(
+    ILogger<GetTasksQueryHandler> logger,
+    IMapper mapper,
+    ITaskRepository taskRepository,
+    IWorkspaceAccessService accessService) : IRequestHandler<GetTasksQuery, List<TaskDto>>
 {
     public async Task<List<TaskDto>> Handle(GetTasksQuery request, CancellationToken cancellationToken)
     {
@@ -23,8 +28,9 @@ public class GetTasksQueryHandler(ILogger<GetTasksQueryHandler> logger, IMapper 
             DueAfter = request.DueAfter
         };
 
-        var tasks = await taskRepository.GetFilteredTasks(filter);
+        var currentUser = accessService.GetCurrentUser();
+        var tasks = await taskRepository.GetFilteredTasksForUser(filter, currentUser.Id, cancellationToken);
 
-        return (List<TaskDto>)mapper.Map<IList<TaskDto>>(tasks);
+        return mapper.Map<List<TaskDto>>(tasks);
     }
 }

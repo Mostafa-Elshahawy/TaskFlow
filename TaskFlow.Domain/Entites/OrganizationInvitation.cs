@@ -6,8 +6,12 @@ public class OrganizationInvitation
     public int OrganizationId { get; set; }
     public Organization Organization { get; set; } = default!;
     public string InvitedEmail { get; set; } = default!;
-    public string Token { get; set; } = Guid.NewGuid().ToString();
+    public string TokenHash { get; set; } = default!;
     public OrganizationRole Role { get; set; } = OrganizationRole.Member;
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public bool Accepted { get; set; } = false;
+    public DateTime CreatedAtUtc { get; set; }
+    public DateTime ExpiresAtUtc { get; set; }
+    public DateTime? AcceptedAtUtc { get; set; }
+    public string? AcceptedByUserId { get; set; }
+    public DateTime? RevokedAtUtc { get; set; }
+    public byte[] RowVersion { get; set; } = [];
 }

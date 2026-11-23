@@ -7,9 +7,12 @@ namespace TaskFlow.Domain.Repositories;
 public interface ITaskRepository
 {
     Task<int> Create(TaskEntity entity);
-    Task<TaskEntity?> GetById(int id);
+    Task<TaskEntity?> GetById(int id, CancellationToken cancellationToken = default);
     Task Delete(TaskEntity entity);
-    Task<IEnumerable<TaskEntity>> GetFilteredTasks(TaskFilter taskFilter);
+    Task<IEnumerable<TaskEntity>> GetFilteredTasksForUser(
+        TaskFilter taskFilter,
+        string userId,
+        CancellationToken cancellationToken = default);
     Task SaveChanges();
     Task AssignTask(TaskEntity task);
 }

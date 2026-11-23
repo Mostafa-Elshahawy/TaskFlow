@@ -1,33 +1,36 @@
-﻿using AutoMapper;
+using AutoMapper;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using TaskFlow.Application.Users;
+using TaskFlow.Application.Authorization;
 using TaskFlow.Domain.Entites;
 using TaskFlow.Domain.Repositories;
 
-
 namespace TaskFlow.Application.Tasks.Commands.CreateTask;
 
-internal class CreateTaskCommandHandler(ILogger<CreateTaskCommandHandler> logger,
-                                        ITaskRepository taskRepository,
-                                        IMapper mapper,
-                                        IUserContext userContext)
-                                       :IRequestHandler<CreateTaskCommand, int>
+internal class CreateTaskCommandHandler(
+    ILogger<CreateTaskCommandHandler> logger,
+    ITaskRepository taskRepository,
+    IMapper mapper,
+    IWorkspaceAccessService accessService) : IRequestHandler<CreateTaskCommand, int>
 {
     public async Task<int> Handle(CreateTaskCommand request, CancellationToken cancellationToken)
     {
-        var currentUser = userContext.GetCurrentUser()
-            ?? throw new InvalidOperationException("Authenticated user context is missing.");
+        var project = string.IsNullOrWhiteSpace(request.AssigneeId)
+            ? await accessService.RequireProjectContributionAsync(request.ProjectId, cancellationToken)
+            : await accessService.RequireProjectManagementAsync(request.ProjectId, cancellationToken);
+        var currentUser = accessService.GetCurrentUser();
 
-        logger.LogInformation("{UserEmail} [{UserId}] is creating a new task {@Task}",
-            currentUser.Email,
+        if (!string.IsNullOrWhiteSpace(request.AssigneeId))
+            await accessService.EnsureProjectMemberAsync(project, request.AssigneeId);
+
+        logger.LogInformation(
+            "User {UserId} is creating a task in project {ProjectId}",
             currentUser.Id,
-            request);
+            project.Id);
 
         var task = mapper.Map<TaskEntity>(request);
         task.CreatedByUserId = currentUser.Id;
 
-        int id = await taskRepository.Create(task);
-        return id;
+        return await taskRepository.Create(task);
     }
 }

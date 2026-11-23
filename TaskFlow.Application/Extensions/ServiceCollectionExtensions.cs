@@ -1,6 +1,8 @@
 ﻿using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.Extensions.DependencyInjection;
+using TaskFlow.Application.Authorization;
+using TaskFlow.Application.Orgs.Invitations;
 using TaskFlow.Application.Users;
 
 namespace TaskFlow.Application.Extensions;
@@ -16,6 +18,8 @@ public static class ServiceCollectionExtensions
         services.AddValidatorsFromAssembly(ApplicationAssembly).AddFluentValidationAutoValidation();
 
         services.AddScoped<IUserContext, UserContext>();
+        services.AddScoped<IWorkspaceAccessService, WorkspaceAccessService>();
+        services.AddSingleton<IInvitationTokenService, InvitationTokenService>();
         services.AddHttpContextAccessor();
 
     }

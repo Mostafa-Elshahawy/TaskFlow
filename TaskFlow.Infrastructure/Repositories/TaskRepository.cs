@@ -28,16 +28,19 @@ internal class TaskRepository(ApplicationDBContext dbContext) : ITaskRepository
         await dbContext.SaveChangesAsync();
     }
 
-    public async Task<TaskEntity?> GetById(int id)
+    public async Task<TaskEntity?> GetById(int id, CancellationToken cancellationToken = default)
     {
         return await dbContext.Tasks
             .Include(t => t.CreatedBy)
             .Include(t => t.Assignee)
             .Include(t => t.Project)
-            .FirstOrDefaultAsync(t => t.Id == id);
+            .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
     }
 
-    public async Task<IEnumerable<TaskEntity>> GetFilteredTasks(TaskFilter taskFilter)
+    public async Task<IEnumerable<TaskEntity>> GetFilteredTasksForUser(
+        TaskFilter taskFilter,
+        string userId,
+        CancellationToken cancellationToken = default)
     {
         var query = dbContext.Tasks
         .AsNoTracking()
@@ -47,6 +50,8 @@ internal class TaskRepository(ApplicationDBContext dbContext) : ITaskRepository
         .AsQueryable();
 
         query = query
+            .Where(t => t.Project.Organization.OwnerId == userId ||
+                        t.Project.Organization.Members.Any(member => member.UserId == userId))
             .WhereIf(taskFilter.Status.HasValue, t => t.Status == taskFilter.Status!.Value)
             .WhereIf(taskFilter.Priority.HasValue, t => t.Priority == taskFilter.Priority!.Value)
             .WhereIf(!string.IsNullOrEmpty(taskFilter.AssigneeId), t => t.AssigneeId == taskFilter.AssigneeId)
@@ -54,7 +59,7 @@ internal class TaskRepository(ApplicationDBContext dbContext) : ITaskRepository
             .WhereIf(taskFilter.DueBefore.HasValue, t => t.DueDate < taskFilter.DueBefore)
             .WhereIf(taskFilter.DueAfter.HasValue, t => t.DueDate > taskFilter.DueAfter);
 
-        return await query.ToListAsync();
+        return await query.ToListAsync(cancellationToken);
     }
     public Task SaveChanges() => dbContext.SaveChangesAsync();
 }

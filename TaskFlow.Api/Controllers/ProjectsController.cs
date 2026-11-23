@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using TaskFlow.Application.Projects.Commands.AddMemebers;
 using TaskFlow.Application.Projects.Commands.CreateProject;
 using TaskFlow.Application.Projects.Commands.DeleteProject;
 using TaskFlow.Application.Projects.Commands.UpdateProject;
@@ -39,6 +40,14 @@ public class ProjectsController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> UpdateProject(int id, UpdateProjectCommand command)
     {
         command.Id = id;
+        await mediator.Send(command);
+        return NoContent();
+    }
+
+    [HttpPost("{projectId}/members")]
+    public async Task<IActionResult> AddMember(int projectId, AddMemebersCommand command)
+    {
+        command.ProjectId = projectId;
         await mediator.Send(command);
         return NoContent();
     }

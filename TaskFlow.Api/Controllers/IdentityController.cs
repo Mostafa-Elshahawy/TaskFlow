@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TaskFlow.Application.Users.Commands.PromoteUser;
 using TaskFlow.Application.Users.Queries.GetUsers;
+using TaskFlow.Domain.Constants;
 
 namespace TaskFlow.Api.Controllers;
 
@@ -19,6 +20,7 @@ public class IdentityController(IMediator mediatR) : ControllerBase
     }
 
     [HttpPut("promote")]
+    [Authorize(Roles = UserRoles.Admin)]
     public async Task<IActionResult> PromoteUserToManager([FromBody] PromoteUserToManagerCommand command)
     {
         await mediatR.Send(command);

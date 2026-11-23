@@ -12,7 +12,8 @@ public class OrganizationMember
 
 public enum OrganizationRole
 {
-    Member,
-    Manager,
-    Owner
+    Member = 0,
+    Manager = 1,
+    Owner = 2,
+    Admin = 3
 }

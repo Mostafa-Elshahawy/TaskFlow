@@ -15,6 +15,7 @@ public class ApplicationDBContext : IdentityDbContext<ApplicationUser>
     internal DbSet<Organization> Organizations { get; set; }
     internal DbSet<OrganizationMember> OrganizationMembers { get; set; }
     internal DbSet<OrganizationInvitation> OrganizationInvitations { get; set; }
+    internal DbSet<EmailOutboxMessage> EmailOutboxMessages { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -99,6 +100,47 @@ public class ApplicationDBContext : IdentityDbContext<ApplicationUser>
             .HasOne(i => i.Organization)
             .WithMany(o => o.Invitations)
             .HasForeignKey(i => i.OrganizationId);
+
+        modelBuilder.Entity<OrganizationInvitation>()
+            .Property(i => i.TokenHash)
+            .HasMaxLength(64);
+
+        modelBuilder.Entity<OrganizationInvitation>()
+            .Property(i => i.InvitedEmail)
+            .HasMaxLength(256);
+
+        modelBuilder.Entity<OrganizationInvitation>()
+            .Property(i => i.AcceptedByUserId)
+            .HasMaxLength(450);
+
+        modelBuilder.Entity<OrganizationInvitation>()
+            .Property(i => i.RowVersion)
+            .IsRowVersion();
+
+        modelBuilder.Entity<OrganizationInvitation>()
+            .HasIndex(i => i.TokenHash)
+            .IsUnique()
+            .HasFilter("[TokenHash] IS NOT NULL");
+
+        modelBuilder.Entity<OrganizationInvitation>()
+            .HasIndex(i => new { i.OrganizationId, i.InvitedEmail })
+            .IsUnique()
+            .HasFilter("[AcceptedAtUtc] IS NULL AND [RevokedAtUtc] IS NULL");
+
+        modelBuilder.Entity<EmailOutboxMessage>()
+            .Property(message => message.Recipient)
+            .HasMaxLength(256);
+
+        modelBuilder.Entity<EmailOutboxMessage>()
+            .Property(message => message.Subject)
+            .HasMaxLength(500);
+
+        modelBuilder.Entity<EmailOutboxMessage>()
+            .Property(message => message.LastError)
+            .HasMaxLength(2000);
+
+        modelBuilder.Entity<EmailOutboxMessage>()
+            .HasIndex(message => new { message.ProcessedAtUtc, message.NextAttemptAtUtc });
 
         modelBuilder.Entity<Organization>().HasQueryFilter(o => !o.isDeleted);
         modelBuilder.Entity<Project>().HasQueryFilter(p => !p.isDeleted);

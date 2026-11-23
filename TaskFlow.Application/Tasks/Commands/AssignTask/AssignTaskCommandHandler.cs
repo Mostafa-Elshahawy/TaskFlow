@@ -1,47 +1,39 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
-using TaskFlow.Application.Users;
+using TaskFlow.Application.Authorization;
 using TaskFlow.Domain.Entites;
 using TaskFlow.Domain.Exceptions;
 using TaskFlow.Domain.Repositories;
 
 namespace TaskFlow.Application.Tasks.Commands.AssignTask;
 
-public class AssignTaskCommandHandler(ILogger<AssignTaskCommandHandler> logger, ITaskRepository taskRepository, 
-    UserManager<ApplicationUser> userManager, IUserContext userContext) : IRequestHandler<AssignTaskCommand>
+public class AssignTaskCommandHandler(
+    ILogger<AssignTaskCommandHandler> logger,
+    ITaskRepository taskRepository,
+    UserManager<ApplicationUser> userManager,
+    IWorkspaceAccessService accessService) : IRequestHandler<AssignTaskCommand>
 {
     public async Task Handle(AssignTaskCommand request, CancellationToken cancellationToken)
     {
-        var currentUser = userContext.GetCurrentUser();
+        var currentUser = accessService.GetCurrentUser();
+        var task = await taskRepository.GetById(request.TaskId, cancellationToken)
+            ?? throw new NotFoundException("Task", request.TaskId.ToString());
 
-        logger.LogInformation("{UserEmail} [{UserId}] is assigning task with ID {TaskId} to user with ID {AssigneeId}", 
-            currentUser?.Email, 
-            currentUser?.Id, 
-            request.TaskId, 
-            request.AssigneeId);
+        var project = await accessService.RequireProjectManagementAsync(task.ProjectId, cancellationToken);
+        await accessService.EnsureProjectMemberAsync(project, request.AssigneeId);
 
-        if (currentUser == null)
-        {
-            logger.LogWarning("User with ID {UserId} not found.", request.AssignedById);
-            throw new NotFoundException(nameof(currentUser), request.AssignedById.ToString());
-        }
+        var assignee = await userManager.FindByIdAsync(request.AssigneeId)
+            ?? throw new NotFoundException(nameof(ApplicationUser), request.AssigneeId);
 
-        if (!currentUser.Roles.Contains("Manager"))
-            throw new UnauthorizedAccessException("Only managers can assign tasks.");
-
-        var task = await taskRepository.GetById(request.TaskId);
-        if (task == null || task.isDeleted)
-            throw new KeyNotFoundException("Task not found.");
-
-        var assignee = await userManager.FindByIdAsync(request.AssigneeId);
-        if (assignee == null)
-            throw new NotFoundException(nameof(assignee),request.AssigneeId.ToString());
-
-        task.AssigneeId = request.AssigneeId;
+        task.AssigneeId = assignee.Id;
         task.UpdatedAt = DateTime.UtcNow;
 
         await taskRepository.AssignTask(task);
-        logger.LogInformation("Task with ID {TaskId} assigned to user with ID {UserId}.", request.TaskId, request.AssigneeId);
+        logger.LogInformation(
+            "User {UserId} assigned task {TaskId} to {AssigneeId}",
+            currentUser.Id,
+            request.TaskId,
+            assignee.Id);
     }
 }

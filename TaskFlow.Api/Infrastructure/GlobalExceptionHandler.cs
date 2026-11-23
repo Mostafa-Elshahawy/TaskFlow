@@ -18,8 +18,11 @@ public class GlobalExceptionHandler : IExceptionHandler
         var (statusCode, title) = exception switch
         {
             NotFoundException => (StatusCodes.Status404NotFound, "Resource not found."),
+            ConflictException => (StatusCodes.Status409Conflict, "Request conflict."),
+            InvalidInvitationException => (StatusCodes.Status400BadRequest, "Invalid invitation."),
             ForbidException => (StatusCodes.Status403Forbidden, "Access denied."),
             UnauthorizedAccessException => (StatusCodes.Status403Forbidden, "Access denied."),
+            ArgumentException => (StatusCodes.Status400BadRequest, "Invalid request."),
             _ => (StatusCodes.Status500InternalServerError, "An error occurred while processing your request.")
         };
 

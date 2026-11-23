@@ -26,12 +26,14 @@ namespace TaskFlow
 
             var app = builder.Build();
 
-            await using var scope = app.Services.CreateAsyncScope();
-            var db = scope.ServiceProvider.GetRequiredService<ApplicationDBContext>();
-            await db.Database.MigrateAsync();
+            await using (var scope = app.Services.CreateAsyncScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<ApplicationDBContext>();
+                await db.Database.MigrateAsync();
 
-            var seeder = scope.ServiceProvider.GetRequiredService<IRoleSeeder>();
-            await seeder.SeedRoles();
+                var seeder = scope.ServiceProvider.GetRequiredService<IIdentitySeeder>();
+                await seeder.SeedAsync();
+            }
 
             if (app.Environment.IsDevelopment())
             {

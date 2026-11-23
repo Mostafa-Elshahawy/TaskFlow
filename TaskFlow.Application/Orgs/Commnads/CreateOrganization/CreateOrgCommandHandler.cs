@@ -1,47 +1,37 @@
 ﻿using MediatR;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
-using TaskFlow.Domain.Constants;
+using TaskFlow.Application.Users;
 using TaskFlow.Domain.Entites;
 using TaskFlow.Domain.Repositories;
 
 namespace TaskFlow.Application.Orgs.Commnads.CreateOrganization;
 
-public class CreateOrgCommandHandler(ILogger<CreateOrgCommandHandler> logger, UserManager<ApplicationUser> userManager,
-                                     IOrganizationRepository organizationRepository)
+public class CreateOrgCommandHandler(
+    ILogger<CreateOrgCommandHandler> logger,
+    IOrganizationRepository organizationRepository,
+    IUserContext userContext)
                                      : IRequestHandler<CreateOrgCommand, int>
 {
     public async Task<int> Handle(CreateOrgCommand request, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Creating organization: {OrgName} with admin: {AdminEmail}", request.Name, request.AdminEmail);
-        var adminUser = await userManager.FindByEmailAsync(request.AdminEmail);
-        if (adminUser == null)
-        {
-            adminUser = new ApplicationUser
-            {
-                UserName = request.AdminEmail,
-                Email = request.AdminEmail,
-                EmailConfirmed = true
-            };
+        var currentUser = userContext.GetCurrentUser()
+            ?? throw new UnauthorizedAccessException("User is not authenticated.");
 
-            var result = await userManager.CreateAsync(adminUser, request.AdminPassword);
-            if (!result.Succeeded)
-                throw new InvalidOperationException($"Failed to create admin: {string.Join(", ", result.Errors.Select(e => e.Description))}");
-
-            await userManager.AddToRoleAsync(adminUser, UserRoles.Admin);
-        }
+        logger.LogInformation(
+            "User {UserId} is creating organization {OrganizationName}",
+            currentUser.Id,
+            request.Name);
 
         var organization = new Organization
         {
             Name = request.Name,
             Description = request.Description,
-            OwnerId = adminUser.Id,
+            OwnerId = currentUser.Id,
             Members = new List<OrganizationMember>
             {
                 new OrganizationMember
                 {
-                    UserId = adminUser.Id,
-                    User = adminUser,
+                    UserId = currentUser.Id,
                     Role = OrganizationRole.Owner,
                     JoinedAt = DateTime.UtcNow
                 }

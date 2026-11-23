@@ -1,11 +1,14 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using TaskFlow.Application.Orgs.Invitations;
 using TaskFlow.Domain.Constants;
 using TaskFlow.Domain.Entites;
 using TaskFlow.Domain.Repositories;
+using TaskFlow.Infrastructure.BackgroundJobs;
 using TaskFlow.Infrastructure.Persistence;
 using TaskFlow.Infrastructure.Repositories;
 using TaskFlow.Infrastructure.Seeders;
@@ -29,7 +32,16 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITaskRepository, TaskRepository>();
         services.AddScoped<IProjectRepository, ProjectRepository>();
         services.AddScoped<IOrganizationRepository, OrganizationRepository>();
-        services.AddScoped<IRoleSeeder, RoleSeeder>();
+        services.AddScoped<IEmailOutboxRepository, EmailOutboxRepository>();
+        services.AddScoped<EmailOutboxProcessor>();
+        services.AddHostedService<EmailOutboxWorker>();
+        services.AddSingleton(TimeProvider.System);
+        services.AddDataProtection();
+        services.Configure<BootstrapAdminOptions>(
+            configuration.GetSection(BootstrapAdminOptions.SectionName));
+        services.Configure<InvitationOptions>(
+            configuration.GetSection(InvitationOptions.SectionName));
+        services.AddScoped<IIdentitySeeder, IdentitySeeder>();
 
         services.Configure<SmtpSettings>(configuration.GetSection("Smtp"));
         services.AddSingleton(sp => sp.GetRequiredService<IOptions<SmtpSettings>>().Value);

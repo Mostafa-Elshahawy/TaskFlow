@@ -34,20 +34,12 @@ public class OrganizationController(IMediator mediator) : ControllerBase
         return Ok(inviteId);
     }
 
-    [AllowAnonymous]
-    [HttpGet("accept-invite")]
-    public async Task<IActionResult> AcceptInvite([FromQuery] string token)
+    [HttpPost("accept-invite")]
+    public async Task<IActionResult> AcceptInvite(
+        [FromBody] AcceptOrganizationInvitationCommand command,
+        CancellationToken cancellationToken)
     {
-        var userId = User.Identity?.IsAuthenticated == true
-            ? User.FindFirst("sub")?.Value
-            : null;
-
-        if (string.IsNullOrEmpty(userId))
-            return Unauthorized("You must be logged in to accept the invitation.");
-
-        var command = new AcceptOrganizationInvitationCommand(token, userId);
-        await mediator.Send(command);
-
-        return Ok("Invitation accepted successfully.");
+        await mediator.Send(command, cancellationToken);
+        return NoContent();
     }
 }

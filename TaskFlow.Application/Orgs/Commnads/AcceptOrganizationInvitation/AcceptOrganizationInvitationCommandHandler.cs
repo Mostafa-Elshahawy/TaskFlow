@@ -1,33 +1,62 @@
-﻿using MediatR;
+using MediatR;
+using TaskFlow.Application.Orgs.Invitations;
+using TaskFlow.Application.Users;
 using TaskFlow.Domain.Entites;
+using TaskFlow.Domain.Exceptions;
 using TaskFlow.Domain.Repositories;
 
 namespace TaskFlow.Application.Orgs.Commnads.AcceptOrganizationInvitation;
 
-public class AcceptOrganizationInvitationCommandHandler(IOrganizationRepository organizationRepository) 
-                            : IRequestHandler<AcceptOrganizationInvitationCommand, Unit>
+public class AcceptOrganizationInvitationCommandHandler(
+    IOrganizationRepository organizationRepository,
+    IInvitationTokenService tokenService,
+    IUserContext userContext,
+    TimeProvider timeProvider) : IRequestHandler<AcceptOrganizationInvitationCommand, Unit>
 {
-    public async Task<Unit> Handle(AcceptOrganizationInvitationCommand request, CancellationToken cancellationToken)
+    public async Task<Unit> Handle(
+        AcceptOrganizationInvitationCommand request,
+        CancellationToken cancellationToken)
     {
-        var invite = await organizationRepository.GetInvitationByTokenAsync(request.Token, cancellationToken);
+        var currentUser = userContext.GetCurrentUser()
+            ?? throw new UnauthorizedAccessException("Authentication is required to accept an invitation.");
+        var tokenHash = tokenService.HashToken(request.Token);
+        var invitation = await organizationRepository.GetInvitationByTokenHashAsync(
+                tokenHash,
+                cancellationToken)
+            ?? throw new InvalidInvitationException();
+        var now = timeProvider.GetUtcNow().UtcDateTime;
 
-        if (invite is null || invite.Accepted)
-            throw new InvalidOperationException("Invalid or expired invitation.");
-
-        bool alreadyMember = invite.Organization.Members.Any(m => m.UserId == request.UserId);
-        if (alreadyMember)
-            throw new InvalidOperationException("User already a member of this organization.");
-
-        var membership = new OrganizationMember
+        if (invitation.AcceptedAtUtc is not null)
         {
-            UserId = request.UserId,
-            OrganizationId = invite.OrganizationId,
-            Role = invite.Role
-        };
+            if (invitation.AcceptedByUserId == currentUser.Id)
+                return Unit.Value;
 
-        await organizationRepository.AddMemberAsync(membership);
+            throw new InvalidInvitationException();
+        }
 
-        invite.Accepted = true;
+        if (invitation.RevokedAtUtc is not null || invitation.ExpiresAtUtc <= now)
+            throw new InvalidInvitationException();
+
+        var normalizedCurrentEmail = currentUser.Email.Trim().ToUpperInvariant();
+        if (!string.Equals(invitation.InvitedEmail, normalizedCurrentEmail, StringComparison.Ordinal))
+            throw new ForbidException();
+
+        var alreadyMember = invitation.Organization.Members.Any(member => member.UserId == currentUser.Id);
+        if (!alreadyMember)
+        {
+            await organizationRepository.AddMemberAsync(
+                new OrganizationMember
+                {
+                    UserId = currentUser.Id,
+                    OrganizationId = invitation.OrganizationId,
+                    Role = invitation.Role,
+                    JoinedAt = now
+                },
+                cancellationToken);
+        }
+
+        invitation.AcceptedAtUtc = now;
+        invitation.AcceptedByUserId = currentUser.Id;
         await organizationRepository.SaveChangesAsync(cancellationToken);
 
         return Unit.Value;
