@@ -44,7 +44,7 @@ public class ExplicitMappingTests
     }
 
     [Fact]
-    public void TaskDtoMapping_MapsNavigationNamesAndNullableAssignee()
+    public void TaskDtoMapping_MapsNavigationNames()
     {
         var createdAt = new DateTime(2026, 11, 20, 10, 0, 0, DateTimeKind.Utc);
         var updatedAt = createdAt.AddHours(2);
@@ -85,6 +85,31 @@ public class ExplicitMappingTests
         Assert.Equal(completedAt, dto.CompletedAt);
         Assert.Equal(createdAt, dto.CreatedAt);
         Assert.Equal(updatedAt, dto.UpdatedAt);
+    }
+
+    [Fact]
+    public void DtoMappings_PreserveNullNavigationNames()
+    {
+        var task = new TaskEntity
+        {
+            Title = "Unloaded task",
+            Description = "Navigation properties are not loaded",
+            CreatedByUserId = "creator-5"
+        };
+        var project = new Project
+        {
+            Name = "Unloaded project",
+            Description = "Creator navigation is not loaded",
+            CreatedByUserId = "creator-6"
+        };
+
+        var taskDto = task.ToDto();
+        var projectDto = project.ToDto();
+
+        Assert.Null(taskDto.ProjectName);
+        Assert.Null(taskDto.CreatedByName);
+        Assert.Null(taskDto.AssigneeName);
+        Assert.Null(projectDto.CreatedByName);
     }
 
     [Fact]
