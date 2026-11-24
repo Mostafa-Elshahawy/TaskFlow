@@ -1,4 +1,3 @@
-using AutoMapper;
 using MediatR;
 using TaskFlow.Application.Orgs.Dtos;
 using TaskFlow.Application.Users;
@@ -8,7 +7,6 @@ namespace TaskFlow.Application.Orgs.Queries.GetOrganizations;
 
 public class GetOrganizationsQueryHandler(
     IOrganizationRepository organizationRepository,
-    IMapper mapper,
     IUserContext userContext)
     : IRequestHandler<GetOrganizationsQuery, IEnumerable<OrganizationDto>>
 {
@@ -18,6 +16,6 @@ public class GetOrganizationsQueryHandler(
             ?? throw new UnauthorizedAccessException("User is not authenticated.");
 
         var orgs = await organizationRepository.GetAllForUserAsync(currentUser.Id, cancellationToken);
-        return mapper.Map<IEnumerable<OrganizationDto>>(orgs);
+        return orgs.Select(organization => organization.ToDto());
     }
 }

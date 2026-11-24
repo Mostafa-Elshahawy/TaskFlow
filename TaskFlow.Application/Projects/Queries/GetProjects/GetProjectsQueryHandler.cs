@@ -1,4 +1,3 @@
-using AutoMapper;
 using MediatR;
 using TaskFlow.Application.Authorization;
 using TaskFlow.Application.Projects.Dtos;
@@ -7,7 +6,6 @@ using TaskFlow.Domain.Repositories;
 namespace TaskFlow.Application.Projects.Queries.GetProjects;
 
 public class GetProjectsQueryHandler(
-    IMapper mapper,
     IProjectRepository projectRepository,
     IWorkspaceAccessService accessService) : IRequestHandler<GetProjectsQuery, IEnumerable<ProjectDto>>
 {
@@ -20,6 +18,6 @@ public class GetProjectsQueryHandler(
             request.CreatedByUserId,
             cancellationToken);
 
-        return mapper.Map<IEnumerable<ProjectDto>>(projects);
+        return projects.Select(project => project.ToDto());
     }
 }

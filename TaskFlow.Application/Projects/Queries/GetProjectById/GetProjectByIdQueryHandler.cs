@@ -1,4 +1,3 @@
-using AutoMapper;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using TaskFlow.Application.Authorization;
@@ -8,7 +7,6 @@ namespace TaskFlow.Application.Projects.Queries.GetProjectById;
 
 public class GetProjectByIdQueryHandler(
     ILogger<GetProjectByIdQueryHandler> logger,
-    IMapper mapper,
     IWorkspaceAccessService accessService) : IRequestHandler<GetProjectByIdQuery, ProjectDto?>
 {
     public async Task<ProjectDto?> Handle(GetProjectByIdQuery request, CancellationToken cancellationToken)
@@ -16,7 +14,7 @@ public class GetProjectByIdQueryHandler(
         logger.LogInformation("Fetching project with ID: {ProjectId}", request.Id);
 
         var project = await accessService.RequireProjectViewAsync(request.Id, cancellationToken);
-        var projectDto = mapper.Map<ProjectDto>(project);
+        var projectDto = project.ToDto();
 
         logger.LogInformation("Project fetched successfully: {ProjectId}", request.Id);
         return projectDto;

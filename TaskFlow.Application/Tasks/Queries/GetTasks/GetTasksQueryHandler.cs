@@ -1,4 +1,3 @@
-using AutoMapper;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using TaskFlow.Application.Authorization;
@@ -10,7 +9,6 @@ namespace TaskFlow.Application.Tasks.Queries.GetTasks;
 
 public class GetTasksQueryHandler(
     ILogger<GetTasksQueryHandler> logger,
-    IMapper mapper,
     ITaskRepository taskRepository,
     IWorkspaceAccessService accessService) : IRequestHandler<GetTasksQuery, List<TaskDto>>
 {
@@ -31,6 +29,6 @@ public class GetTasksQueryHandler(
         var currentUser = accessService.GetCurrentUser();
         var tasks = await taskRepository.GetFilteredTasksForUser(filter, currentUser.Id, cancellationToken);
 
-        return mapper.Map<List<TaskDto>>(tasks);
+        return tasks.Select(task => task.ToDto()).ToList();
     }
 }

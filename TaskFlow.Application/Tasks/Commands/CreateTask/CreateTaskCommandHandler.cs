@@ -1,7 +1,7 @@
-using AutoMapper;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using TaskFlow.Application.Authorization;
+using TaskFlow.Application.Tasks.Dtos;
 using TaskFlow.Domain.Entites;
 using TaskFlow.Domain.Repositories;
 
@@ -10,7 +10,6 @@ namespace TaskFlow.Application.Tasks.Commands.CreateTask;
 internal class CreateTaskCommandHandler(
     ILogger<CreateTaskCommandHandler> logger,
     ITaskRepository taskRepository,
-    IMapper mapper,
     IWorkspaceAccessService accessService) : IRequestHandler<CreateTaskCommand, int>
 {
     public async Task<int> Handle(CreateTaskCommand request, CancellationToken cancellationToken)
@@ -28,8 +27,7 @@ internal class CreateTaskCommandHandler(
             currentUser.Id,
             project.Id);
 
-        var task = mapper.Map<TaskEntity>(request);
-        task.CreatedByUserId = currentUser.Id;
+        var task = request.ToEntity(currentUser.Id, DateTime.UtcNow);
 
         return await taskRepository.Create(task);
     }

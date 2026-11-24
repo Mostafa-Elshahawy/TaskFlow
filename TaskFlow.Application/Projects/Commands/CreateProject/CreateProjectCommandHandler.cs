@@ -1,7 +1,7 @@
-using AutoMapper;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using TaskFlow.Application.Authorization;
+using TaskFlow.Application.Projects.Dtos;
 using TaskFlow.Domain.Entites;
 using TaskFlow.Domain.Repositories;
 
@@ -9,7 +9,6 @@ namespace TaskFlow.Application.Projects.Commands.CreateProject;
 
 public class CreateProjectCommandHandler(
     ILogger<CreateProjectCommandHandler> logger,
-    IMapper mapper,
     IProjectRepository projectRepository,
     IWorkspaceAccessService accessService) : IRequestHandler<CreateProjectCommand, int>
 {
@@ -24,8 +23,7 @@ public class CreateProjectCommandHandler(
             request.Name,
             request.OrganizationId);
 
-        var project = mapper.Map<Project>(request);
-        project.CreatedByUserId = currentUser.Id;
+        var project = request.ToEntity(currentUser.Id, DateTime.UtcNow);
         project.Members = new List<ProjectMember>
         {
             new()

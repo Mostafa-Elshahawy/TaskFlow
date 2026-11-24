@@ -1,4 +1,3 @@
-using AutoMapper;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using TaskFlow.Application.Authorization;
@@ -11,7 +10,6 @@ namespace TaskFlow.Application.Tasks.Queries.GetTaskById;
 public class GetTaskByIdQueryHandler(
     ILogger<GetTaskByIdQueryHandler> logger,
     ITaskRepository taskRepository,
-    IMapper mapper,
     IWorkspaceAccessService accessService) : IRequestHandler<GetTaskByIdQuery, TaskDto>
 {
     public async Task<TaskDto> Handle(GetTaskByIdQuery request, CancellationToken cancellationToken)
@@ -22,6 +20,6 @@ public class GetTaskByIdQueryHandler(
             ?? throw new NotFoundException("Task", request.Id.ToString());
 
         await accessService.RequireProjectViewAsync(task.ProjectId, cancellationToken);
-        return mapper.Map<TaskDto>(task);
+        return task.ToDto();
     }
 }
