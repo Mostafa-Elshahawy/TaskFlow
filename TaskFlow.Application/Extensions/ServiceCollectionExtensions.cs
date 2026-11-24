@@ -14,7 +14,6 @@ public static class ServiceCollectionExtensions
         var ApplicationAssembly = typeof(ServiceCollectionExtensions).Assembly;
 
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(ApplicationAssembly));
-        services.AddAutoMapper(ApplicationAssembly);
         services.AddValidatorsFromAssembly(ApplicationAssembly).AddFluentValidationAutoValidation();
 
         services.AddScoped<IUserContext, UserContext>();
