@@ -411,6 +411,12 @@ namespace TaskFlow.Infrastructure.Migrations
                     b.Property<int>("OrganizationId")
                         .HasColumnType("int");
 
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -500,6 +506,12 @@ namespace TaskFlow.Infrastructure.Migrations
                     b.Property<int>("ProjectId")
                         .HasColumnType("int");
 
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
@@ -523,6 +535,39 @@ namespace TaskFlow.Infrastructure.Migrations
                     b.HasIndex("ProjectId");
 
                     b.ToTable("Tasks");
+                });
+
+            modelBuilder.Entity("TaskFlow.Domain.Entites.TaskStatusHistory", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTimeOffset>("ChangedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("ChangedByUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("FromStatus")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TaskId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ToStatus")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChangedByUserId");
+
+                    b.HasIndex("TaskId", "ChangedAtUtc");
+
+                    b.ToTable("TaskStatusHistories");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -700,6 +745,25 @@ namespace TaskFlow.Infrastructure.Migrations
                     b.Navigation("Project");
                 });
 
+            modelBuilder.Entity("TaskFlow.Domain.Entites.TaskStatusHistory", b =>
+                {
+                    b.HasOne("TaskFlow.Domain.Entites.ApplicationUser", "ChangedBy")
+                        .WithMany()
+                        .HasForeignKey("ChangedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TaskFlow.Domain.Entites.TaskEntity", "Task")
+                        .WithMany("StatusHistory")
+                        .HasForeignKey("TaskId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ChangedBy");
+
+                    b.Navigation("Task");
+                });
+
             modelBuilder.Entity("TaskFlow.Domain.Entites.ApplicationUser", b =>
                 {
                     b.Navigation("AssignedTasks");
@@ -727,6 +791,11 @@ namespace TaskFlow.Infrastructure.Migrations
                     b.Navigation("Members");
 
                     b.Navigation("Tasks");
+                });
+
+            modelBuilder.Entity("TaskFlow.Domain.Entites.TaskEntity", b =>
+                {
+                    b.Navigation("StatusHistory");
                 });
 #pragma warning restore 612, 618
         }

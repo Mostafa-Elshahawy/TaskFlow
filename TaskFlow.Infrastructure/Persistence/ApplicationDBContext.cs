@@ -16,6 +16,7 @@ public class ApplicationDBContext : IdentityDbContext<ApplicationUser>
     internal DbSet<OrganizationMember> OrganizationMembers { get; set; }
     internal DbSet<OrganizationInvitation> OrganizationInvitations { get; set; }
     internal DbSet<EmailOutboxMessage> EmailOutboxMessages { get; set; }
+    internal DbSet<TaskStatusHistory> TaskStatusHistories { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -95,6 +96,29 @@ public class ApplicationDBContext : IdentityDbContext<ApplicationUser>
             .WithMany(u => u.AssignedTasks)
             .HasForeignKey(t => t.AssigneeId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<TaskEntity>()
+            .Property(task => task.RowVersion)
+            .IsRowVersion();
+
+        modelBuilder.Entity<Project>()
+            .Property(project => project.RowVersion)
+            .IsRowVersion();
+
+        modelBuilder.Entity<TaskStatusHistory>()
+            .HasOne(history => history.Task)
+            .WithMany(task => task.StatusHistory)
+            .HasForeignKey(history => history.TaskId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<TaskStatusHistory>()
+            .HasOne(history => history.ChangedBy)
+            .WithMany()
+            .HasForeignKey(history => history.ChangedByUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<TaskStatusHistory>()
+            .HasIndex(history => new { history.TaskId, history.ChangedAtUtc });
 
         modelBuilder.Entity<OrganizationInvitation>()
             .HasOne(i => i.Organization)

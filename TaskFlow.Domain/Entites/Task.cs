@@ -24,6 +24,8 @@ public class TaskEntity
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public bool isDeleted { get; set; }
+    public byte[] RowVersion { get; set; } = [];
+    public ICollection<TaskStatusHistory> StatusHistory { get; set; } = new List<TaskStatusHistory>();
 }
 
 public enum TaskStatus

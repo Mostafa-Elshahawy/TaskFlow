@@ -20,4 +20,5 @@ public class Project
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public bool isDeleted { get; set; }
+    public byte[] RowVersion { get; set; } = [];
 }
