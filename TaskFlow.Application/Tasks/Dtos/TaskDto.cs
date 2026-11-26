@@ -20,4 +20,5 @@ public class TaskDto
     public DateTime? CompletedAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
+    public string RowVersion { get; set; } = default!;
 }

@@ -3,29 +3,18 @@ using TaskFlow.Application.Extensions;
 using TaskFlow.Domain.Constants;
 using TaskFlow.Domain.Entites;
 using TaskFlow.Domain.Repositories;
+using TaskFlow.Domain.Exceptions;
 using TaskFlow.Infrastructure.Persistence;
 
 namespace TaskFlow.Infrastructure.Repositories;
 
 internal class TaskRepository(ApplicationDBContext dbContext) : ITaskRepository
 {
-    public async Task AssignTask(TaskEntity task)
-    {
-        dbContext.Update(task);
-        await dbContext.SaveChangesAsync();
-    }
-
     public async Task<int> Create(TaskEntity entity)
     {
       dbContext.Add(entity);
         await dbContext.SaveChangesAsync();
         return entity.Id;
-    }
-
-    public async Task Delete(TaskEntity entity)
-    {
-        dbContext.Remove(entity);
-        await dbContext.SaveChangesAsync();
     }
 
     public async Task<TaskEntity?> GetById(int id, CancellationToken cancellationToken = default)
@@ -35,6 +24,15 @@ internal class TaskRepository(ApplicationDBContext dbContext) : ITaskRepository
             .Include(t => t.Assignee)
             .Include(t => t.Project)
             .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+    }
+
+    public async Task<TaskEntity?> GetByIdForMutation(int id, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Tasks
+            .IgnoreQueryFilters()
+            .Include(task => task.Project)
+            .ThenInclude(project => project.Members)
+            .FirstOrDefaultAsync(task => task.Id == id, cancellationToken);
     }
 
     public async Task<IEnumerable<TaskEntity>> GetFilteredTasksForUser(
@@ -61,5 +59,33 @@ internal class TaskRepository(ApplicationDBContext dbContext) : ITaskRepository
 
         return await query.ToListAsync(cancellationToken);
     }
-    public Task SaveChanges() => dbContext.SaveChangesAsync();
+    public async Task SaveChangesAsync(
+        TaskEntity entity,
+        byte[] expectedRowVersion,
+        CancellationToken cancellationToken = default)
+    {
+        dbContext.Entry(entity).Property(task => task.RowVersion).OriginalValue = expectedRowVersion;
+
+        try
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException exception)
+        {
+            throw new ConflictException("The task was changed by another request. Reload and try again.", exception);
+        }
+    }
+
+    public async Task<IReadOnlyList<TaskStatusHistory>> GetStatusHistoryAsync(
+        int taskId,
+        CancellationToken cancellationToken = default)
+    {
+        return await dbContext.TaskStatusHistories
+            .AsNoTracking()
+            .Include(history => history.ChangedBy)
+            .Where(history => history.TaskId == taskId)
+            .OrderByDescending(history => history.ChangedAtUtc)
+            .ThenByDescending(history => history.Id)
+            .ToListAsync(cancellationToken);
+    }
 }

@@ -8,11 +8,16 @@ public interface ITaskRepository
 {
     Task<int> Create(TaskEntity entity);
     Task<TaskEntity?> GetById(int id, CancellationToken cancellationToken = default);
-    Task Delete(TaskEntity entity);
+    Task<TaskEntity?> GetByIdForMutation(int id, CancellationToken cancellationToken = default);
     Task<IEnumerable<TaskEntity>> GetFilteredTasksForUser(
         TaskFilter taskFilter,
         string userId,
         CancellationToken cancellationToken = default);
-    Task SaveChanges();
-    Task AssignTask(TaskEntity task);
+    Task SaveChangesAsync(
+        TaskEntity entity,
+        byte[] expectedRowVersion,
+        CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<TaskStatusHistory>> GetStatusHistoryAsync(
+        int taskId,
+        CancellationToken cancellationToken = default);
 }

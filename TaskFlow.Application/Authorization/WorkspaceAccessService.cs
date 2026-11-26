@@ -61,6 +61,13 @@ public class WorkspaceAccessService(
         CancellationToken cancellationToken = default)
     {
         var project = await GetProjectAsync(projectId, cancellationToken);
+        return await RequireProjectContributionAsync(project, cancellationToken);
+    }
+
+    public async Task<Project> RequireProjectContributionAsync(
+        Project project,
+        CancellationToken cancellationToken = default)
+    {
         var currentUser = GetCurrentUser();
         var role = await RequireOrganizationMemberAsync(project.OrganizationId, cancellationToken);
 
@@ -79,6 +86,13 @@ public class WorkspaceAccessService(
         CancellationToken cancellationToken = default)
     {
         var project = await GetProjectAsync(projectId, cancellationToken);
+        return await RequireProjectManagementAsync(project, cancellationToken);
+    }
+
+    public async Task<Project> RequireProjectManagementAsync(
+        Project project,
+        CancellationToken cancellationToken = default)
+    {
         var currentUser = GetCurrentUser();
         var role = await RequireOrganizationMemberAsync(project.OrganizationId, cancellationToken);
 

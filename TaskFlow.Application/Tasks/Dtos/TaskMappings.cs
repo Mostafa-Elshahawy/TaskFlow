@@ -1,4 +1,5 @@
 using TaskFlow.Application.Tasks.Commands.CreateTask;
+using TaskFlow.Application.Common;
 using TaskFlow.Domain.Entites;
 
 namespace TaskFlow.Application.Tasks.Dtos;
@@ -43,7 +44,21 @@ public static class TaskMappings
             DueDate = task.DueDate,
             CompletedAt = task.CompletedAt,
             CreatedAt = task.CreatedAt,
-            UpdatedAt = task.UpdatedAt
+            UpdatedAt = task.UpdatedAt,
+            RowVersion = ConcurrencyToken.Encode(task.RowVersion)
+        };
+    }
+
+    public static TaskStatusHistoryDto ToDto(this TaskStatusHistory history)
+    {
+        return new TaskStatusHistoryDto
+        {
+            Id = history.Id,
+            FromStatus = history.FromStatus,
+            ToStatus = history.ToStatus,
+            ChangedByUserId = history.ChangedByUserId,
+            ChangedByName = history.ChangedBy?.UserName,
+            ChangedAtUtc = history.ChangedAtUtc
         };
     }
 }

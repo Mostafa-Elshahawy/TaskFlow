@@ -7,6 +7,7 @@ using TaskFlow.Application.Tasks.Commands.DeleteTask;
 using TaskFlow.Application.Tasks.Commands.UpdateTask;
 using TaskFlow.Application.Tasks.Queries.GetTaskById;
 using TaskFlow.Application.Tasks.Queries.GetTasks;
+using TaskFlow.Application.Tasks.Queries.GetTaskHistory;
 
 namespace TaskFlow.Api.Controllers;
 
@@ -40,10 +41,17 @@ public class TasksController(IMediator mediator) : ControllerBase
 
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteTask(int id)
+    public async Task<ActionResult> DeleteTask(int id, [FromQuery] string rowVersion)
     {
-        await mediator.Send(new DeleteTaskCommand(id));
+        await mediator.Send(new DeleteTaskCommand(id, rowVersion));
         return NoContent();
+    }
+
+    [HttpGet("{id}/history")]
+    public async Task<IActionResult> GetTaskHistory(int id)
+    {
+        var result = await mediator.Send(new GetTaskHistoryQuery(id));
+        return Ok(result);
     }
 
     [HttpGet]

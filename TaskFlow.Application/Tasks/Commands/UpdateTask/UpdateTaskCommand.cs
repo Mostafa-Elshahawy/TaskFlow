@@ -12,4 +12,5 @@ public class UpdateTaskCommand : IRequest
     public DomainTaskStatus Status { get; set; } = DomainTaskStatus.Open;
     public TaskPriority Priority { get; set; } = TaskPriority.Low;
     public DateTime DueDate { get; set; }
+    public string RowVersion { get; set; } = default!;
 }
