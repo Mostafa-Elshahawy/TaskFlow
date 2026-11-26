@@ -147,8 +147,13 @@
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef></th>
           <td mat-cell *matCellDef="let t">
-            <button mat-icon-button (click)="startEdit(t)"><mat-icon>edit</mat-icon></button>
-            <button mat-icon-button color="warn" (click)="delete(t.id)"><mat-icon>delete</mat-icon></button>
+            <button mat-icon-button aria-label="View task history" (click)="loadHistory(t)">
+              <mat-icon>history</mat-icon>
+            </button>
+            <button mat-icon-button aria-label="Edit task" (click)="startEdit(t)"><mat-icon>edit</mat-icon></button>
+            <button mat-icon-button aria-label="Delete task" color="warn" (click)="delete(t)">
+              <mat-icon>delete</mat-icon>
+            </button>
           </td>
         </ng-container>
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
@@ -159,6 +164,44 @@
       }
     </mat-card-content>
   </mat-card>
+
+  @if (historyTask) {
+    <mat-card class="form-card" style="margin-top: 16px;">
+      <mat-card-header>
+        <mat-card-title>Status history: {{ historyTask.title }}</mat-card-title>
+        <span class="flex-spacer"></span>
+        <button mat-icon-button aria-label="Close task history" (click)="closeHistory()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-card-header>
+      <mat-card-content>
+        @if (historyLoading) {
+          <p>Loading history…</p>
+        } @else if (history.length === 0) {
+          <p class="empty-state">No status changes recorded yet.</p>
+        } @else {
+          <table mat-table [dataSource]="history" class="full-width">
+            <ng-container matColumnDef="transition">
+              <th mat-header-cell *matHeaderCellDef>Status change</th>
+              <td mat-cell *matCellDef="let item">
+                {{ statusLabel(item.fromStatus) }} → {{ statusLabel(item.toStatus) }}
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="changedBy">
+              <th mat-header-cell *matHeaderCellDef>Changed by</th>
+              <td mat-cell *matCellDef="let item">{{ item.changedByName || item.changedByUserId }}</td>
+            </ng-container>
+            <ng-container matColumnDef="changedAt">
+              <th mat-header-cell *matHeaderCellDef>Changed at</th>
+              <td mat-cell *matCellDef="let item">{{ item.changedAtUtc | date:'medium' }}</td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="['transition', 'changedBy', 'changedAt']"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['transition', 'changedBy', 'changedAt'];"></tr>
+          </table>
+        }
+      </mat-card-content>
+    </mat-card>
+  }
 
   @if (editingTask) {
     <mat-card class="form-card" style="margin-top: 16px;">

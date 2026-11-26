@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import {
   ProjectDto,
@@ -31,8 +31,9 @@ export class ProjectService {
     return this.http.patch(`${this.base}/${id}`, request);
   }
 
-  delete(id: number) {
-    return this.http.delete(`${this.base}/${id}`);
+  delete(id: number, rowVersion: string) {
+    const params = new HttpParams().set('rowVersion', rowVersion);
+    return this.http.delete(`${this.base}/${id}`, { params });
   }
 
   addMember(request: AddMemberRequest) {

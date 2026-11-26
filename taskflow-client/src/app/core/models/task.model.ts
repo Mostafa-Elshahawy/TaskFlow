@@ -26,6 +26,7 @@ export interface TaskDto {
   completedAt?: string;
   createdAt: string;
   updatedAt?: string;
+  rowVersion: string;
 }
 
 export interface CreateTaskRequest {
@@ -44,6 +45,7 @@ export interface UpdateTaskRequest {
   status: TaskStatus;
   priority: TaskPriority;
   dueDate: string;
+  rowVersion: string;
 }
 
 export interface TaskFilter {
@@ -58,4 +60,14 @@ export interface TaskFilter {
 export interface AssignTaskRequest {
   taskId: number;
   assigneeId: string;
+  rowVersion: string;
+}
+
+export interface TaskStatusHistoryDto {
+  id: number;
+  fromStatus: TaskStatus;
+  toStatus: TaskStatus;
+  changedByUserId: string;
+  changedByName?: string;
+  changedAtUtc: string;
 }

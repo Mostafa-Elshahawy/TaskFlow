@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -14,7 +15,13 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { TaskService } from '../../../core/services/task.service';
 import { ProjectService } from '../../../core/services/project.service';
 import { UserService } from '../../../core/services/user.service';
-import { TaskDto, TaskFilter, TaskStatus, TaskPriority } from '../../../core/models/task.model';
+import {
+  TaskDto,
+  TaskFilter,
+  TaskStatus,
+  TaskPriority,
+  TaskStatusHistoryDto
+} from '../../../core/models/task.model';
 import { ProjectDto } from '../../../core/models/project.model';
 import { UserDto } from '../../../core/models/user.model';
 
@@ -50,6 +57,10 @@ export class TaskListComponent implements OnInit {
   displayedColumns = ['title', 'project', 'status', 'priority', 'assignee', 'dueDate', 'actions'];
   showCreateForm = false;
   editingTask?: TaskDto;
+  historyTask?: TaskDto;
+  history: TaskStatusHistoryDto[] = [];
+  historyLoading = false;
+  private historyRequestVersion = 0;
 
   TaskStatus = TaskStatus;
   TaskPriority = TaskPriority;
@@ -151,34 +162,98 @@ export class TaskListComponent implements OnInit {
 
   saveEdit() {
     if (!this.editingTask || this.editForm.invalid) return;
-    this.taskService.update(this.editingTask.id, this.editForm.value as any).subscribe({
+    const task = this.editingTask;
+    const value = this.editForm.getRawValue();
+    this.taskService.update(task.id, {
+      title: value.title!,
+      description: value.description!,
+      status: value.status!,
+      priority: value.priority!,
+      dueDate: value.dueDate!,
+      rowVersion: task.rowVersion
+    }).subscribe({
       next: () => {
         this.snack.open('Task updated', 'Close', { duration: 3000 });
         this.editingTask = undefined;
         this.load();
+        if (this.historyTask?.id === task.id) this.loadHistory(task);
       },
-      error: (err) => this.snack.open(err?.error?.detail || 'Failed', 'Close', { duration: 3000 })
+      error: (err) => this.handleMutationError(err)
     });
   }
 
-  delete(id: number) {
+  delete(task: TaskDto) {
     if (!confirm('Delete this task?')) return;
-    this.taskService.delete(id).subscribe({
-      next: () => { this.snack.open('Task deleted', 'Close', { duration: 3000 }); this.load(); },
-      error: (err) => this.snack.open(err?.error?.detail || 'Failed', 'Close', { duration: 3000 })
+    this.taskService.delete(task.id, task.rowVersion).subscribe({
+      next: () => {
+        this.snack.open('Task deleted', 'Close', { duration: 3000 });
+        if (this.historyTask?.id === task.id) {
+          this.historyTask = undefined;
+          this.history = [];
+        }
+        this.load();
+      },
+      error: (err) => this.handleMutationError(err)
     });
   }
 
   assign() {
     if (this.assignForm.invalid) return;
-    this.taskService.assign(this.assignForm.value as any).subscribe({
+    const value = this.assignForm.getRawValue();
+    const task = this.dataSource.data.find(candidate => candidate.id === value.taskId);
+    if (!task || !value.assigneeId) return;
+
+    this.taskService.assign({
+      taskId: task.id,
+      assigneeId: value.assigneeId,
+      rowVersion: task.rowVersion
+    }).subscribe({
       next: () => {
         this.snack.open('Task assigned', 'Close', { duration: 3000 });
         this.assignForm.reset();
         this.load();
       },
-      error: (err) => this.snack.open(err?.error?.detail || 'Failed', 'Close', { duration: 3000 })
+      error: (err) => this.handleMutationError(err)
     });
+  }
+
+  loadHistory(task: TaskDto) {
+    const requestVersion = ++this.historyRequestVersion;
+    this.historyTask = task;
+    this.history = [];
+    this.historyLoading = true;
+    this.taskService.getHistory(task.id).subscribe({
+      next: (history) => {
+        if (requestVersion !== this.historyRequestVersion) return;
+        this.history = history;
+        this.historyLoading = false;
+      },
+      error: (err) => {
+        if (requestVersion !== this.historyRequestVersion) return;
+        this.history = [];
+        this.historyLoading = false;
+        this.snack.open(err?.error?.detail || 'Failed to load task history', 'Close', { duration: 3000 });
+      }
+    });
+  }
+
+  closeHistory() {
+    this.historyRequestVersion++;
+    this.historyTask = undefined;
+    this.history = [];
+    this.historyLoading = false;
+  }
+
+  private handleMutationError(err: HttpErrorResponse) {
+    if (err?.status === 409) {
+      this.editingTask = undefined;
+      this.closeHistory();
+      this.snack.open('This task changed elsewhere. Reloaded latest data.', 'Close', { duration: 4000 });
+      this.load();
+      return;
+    }
+
+    this.snack.open(err?.error?.detail || 'Failed', 'Close', { duration: 3000 });
   }
 
   statusLabel(s: TaskStatus) { return TaskStatus[s]; }

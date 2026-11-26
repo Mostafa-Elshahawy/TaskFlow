@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -79,11 +80,19 @@ export class ProjectListComponent implements OnInit {
     });
   }
 
-  delete(id: number) {
+  delete(project: ProjectDto) {
     if (!confirm('Delete this project?')) return;
-    this.projectService.delete(id).subscribe({
+    this.projectService.delete(project.id, project.rowVersion).subscribe({
       next: () => { this.snack.open('Project deleted', 'Close', { duration: 3000 }); this.load(); },
-      error: (err) => this.snack.open(err?.error?.detail || 'Failed', 'Close', { duration: 3000 })
+      error: (err: HttpErrorResponse) => {
+        if (err?.status === 409) {
+          this.snack.open('This project changed elsewhere. Reloaded latest data.', 'Close', { duration: 4000 });
+          this.load();
+          return;
+        }
+
+        this.snack.open(err?.error?.detail || 'Failed', 'Close', { duration: 3000 });
+      }
     });
   }
 }

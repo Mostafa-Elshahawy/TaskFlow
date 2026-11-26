@@ -7,6 +7,7 @@ export interface ProjectDto {
   createdAt: string;
   updatedAt?: string;
   organizationId: number;
+  rowVersion: string;
 }
 
 export interface CreateProjectRequest {
@@ -20,6 +21,7 @@ export interface UpdateProjectRequest {
   name: string;
   description: string;
   organizationId: number;
+  rowVersion: string;
 }
 
 export interface AddMemberRequest {

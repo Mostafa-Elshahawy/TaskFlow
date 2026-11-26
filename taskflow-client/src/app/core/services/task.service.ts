@@ -6,7 +6,8 @@ import {
   CreateTaskRequest,
   UpdateTaskRequest,
   TaskFilter,
-  AssignTaskRequest
+  AssignTaskRequest,
+  TaskStatusHistoryDto
 } from '../models/task.model';
 
 @Injectable({ providedIn: 'root' })
@@ -30,6 +31,10 @@ export class TaskService {
     return this.http.get<TaskDto>(`${this.base}/${id}`);
   }
 
+  getHistory(id: number) {
+    return this.http.get<TaskStatusHistoryDto[]>(`${this.base}/${id}/history`);
+  }
+
   create(request: CreateTaskRequest) {
     return this.http.post<number>(this.base, request);
   }
@@ -38,8 +43,9 @@ export class TaskService {
     return this.http.patch(`${this.base}/${id}`, request);
   }
 
-  delete(id: number) {
-    return this.http.delete(`${this.base}/${id}`);
+  delete(id: number, rowVersion: string) {
+    const params = new HttpParams().set('rowVersion', rowVersion);
+    return this.http.delete(`${this.base}/${id}`, { params });
   }
 
   assign(request: AssignTaskRequest) {
