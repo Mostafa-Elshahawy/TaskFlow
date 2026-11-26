@@ -11,4 +11,5 @@ public class ProjectDto
     public DateTime? UpdatedAt { set; get; }
     public bool IsDeleted { set; get; } = false;
     public int OrganizationId { set; get; }
+    public string RowVersion { set; get; } = default!;
 }

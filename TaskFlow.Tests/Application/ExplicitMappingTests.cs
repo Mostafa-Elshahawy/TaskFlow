@@ -65,7 +65,8 @@ public class ExplicitMappingTests
             DueDate = createdAt.AddDays(1),
             CompletedAt = completedAt,
             CreatedAt = createdAt,
-            UpdatedAt = updatedAt
+            UpdatedAt = updatedAt,
+            RowVersion = [1, 2, 3, 4, 5, 6, 7, 8]
         };
 
         var dto = task.ToDto();
@@ -85,6 +86,7 @@ public class ExplicitMappingTests
         Assert.Equal(completedAt, dto.CompletedAt);
         Assert.Equal(createdAt, dto.CreatedAt);
         Assert.Equal(updatedAt, dto.UpdatedAt);
+        Assert.Equal("AQIDBAUGBwg=", dto.RowVersion);
     }
 
     [Fact]
@@ -94,13 +96,15 @@ public class ExplicitMappingTests
         {
             Title = "Unloaded task",
             Description = "Navigation properties are not loaded",
-            CreatedByUserId = "creator-5"
+            CreatedByUserId = "creator-5",
+            RowVersion = [1, 2, 3, 4, 5, 6, 7, 8]
         };
         var project = new Project
         {
             Name = "Unloaded project",
             Description = "Creator navigation is not loaded",
-            CreatedByUserId = "creator-6"
+            CreatedByUserId = "creator-6",
+            RowVersion = [1, 2, 3, 4, 5, 6, 7, 8]
         };
 
         var taskDto = task.ToDto();
@@ -153,7 +157,8 @@ public class ExplicitMappingTests
             OrganizationId = 3,
             CreatedAt = createdAt,
             UpdatedAt = updatedAt,
-            isDeleted = true
+            isDeleted = true,
+            RowVersion = [8, 7, 6, 5, 4, 3, 2, 1]
         };
 
         var dto = project.ToDto();
@@ -167,6 +172,24 @@ public class ExplicitMappingTests
         Assert.Equal(createdAt, dto.CreatedAt);
         Assert.Equal(updatedAt, dto.UpdatedAt);
         Assert.True(dto.IsDeleted);
+        Assert.Equal("CAcGBQQDAgE=", dto.RowVersion);
+    }
+
+    [Fact]
+    public void TaskStatusHistoryDtoMapping_PreservesAnExplicitUtcOffset()
+    {
+        var history = new TaskStatusHistory
+        {
+            FromStatus = TaskStatus.Open,
+            ToStatus = TaskStatus.InProgress,
+            ChangedByUserId = "user-1",
+            ChangedAtUtc = new DateTime(2026, 11, 26, 12, 0, 0, DateTimeKind.Utc)
+        };
+
+        var dto = history.ToDto();
+
+        var changedAt = Assert.IsType<DateTimeOffset>((object)dto.ChangedAtUtc);
+        Assert.Equal(TimeSpan.Zero, changedAt.Offset);
     }
 
     [Fact]

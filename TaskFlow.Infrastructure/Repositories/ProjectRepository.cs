@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaskFlow.Domain.Entites;
 using TaskFlow.Domain.Repositories;
+using TaskFlow.Domain.Exceptions;
 using TaskFlow.Infrastructure.Persistence;
 
 namespace TaskFlow.Infrastructure.Repositories;
@@ -22,6 +23,15 @@ internal class ProjectRepository(ApplicationDBContext dbContext) : IProjectRepos
               .Include(p => p.Tasks)
               .Include(p => p.Members)
               .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+    }
+
+    public async Task<Project?> GetProjectByIdForMutationAsync(
+        int id,
+        CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Projects
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(project => project.Id == id, cancellationToken);
     }
 
     public async Task<IEnumerable<Project>> GetAllProjectsForUserAsync(
@@ -47,29 +57,37 @@ internal class ProjectRepository(ApplicationDBContext dbContext) : IProjectRepos
         return await query.ToListAsync(cancellationToken);
     }
 
-    public async Task DeleteProjectAsync(int projectId, CancellationToken cancellationToken = default)
+    public async Task DeleteProjectAsync(
+        int projectId,
+        byte[] expectedRowVersion,
+        CancellationToken cancellationToken = default)
     {
         var project = await dbContext.Projects
+            .IgnoreQueryFilters()
             .FirstAsync(project => project.Id == projectId, cancellationToken);
 
+        dbContext.Entry(project).Property(entity => entity.RowVersion).OriginalValue = expectedRowVersion;
         project.isDeleted = true;
         project.UpdatedAt = DateTime.UtcNow;
-        await dbContext.SaveChangesAsync(cancellationToken);
+        await SaveChangesAsync(cancellationToken);
     }
 
     public async Task UpdateDetailsAsync(
         int projectId,
         string name,
         string description,
+        byte[] expectedRowVersion,
         CancellationToken cancellationToken = default)
     {
         var project = await dbContext.Projects
+            .IgnoreQueryFilters()
             .FirstAsync(project => project.Id == projectId, cancellationToken);
 
+        dbContext.Entry(project).Property(entity => entity.RowVersion).OriginalValue = expectedRowVersion;
         project.Name = name;
         project.Description = description;
         project.UpdatedAt = DateTime.UtcNow;
-        await dbContext.SaveChangesAsync(cancellationToken);
+        await SaveChangesAsync(cancellationToken);
     }
 
     public async Task AddMemberAsync(
@@ -97,5 +115,17 @@ internal class ProjectRepository(ApplicationDBContext dbContext) : IProjectRepos
 
         project.UpdatedAt = DateTime.UtcNow;
         await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task SaveChangesAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException exception)
+        {
+            throw new ConflictException("The project was changed by another request. Reload and try again.", exception);
+        }
     }
 }

@@ -53,9 +53,9 @@ public class ProjectsController(IMediator mediator) : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteProject(int id)
+    public async Task<IActionResult> DeleteProject(int id, [FromQuery] string rowVersion)
     {
-        await mediator.Send(new DeleteProjectCommand(id));
+        await mediator.Send(new DeleteProjectCommand(id, rowVersion));
         return NoContent();
     }
 }

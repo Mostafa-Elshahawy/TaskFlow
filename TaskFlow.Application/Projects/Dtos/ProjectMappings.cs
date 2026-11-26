@@ -1,4 +1,5 @@
 using TaskFlow.Application.Projects.Commands.CreateProject;
+using TaskFlow.Application.Common;
 using TaskFlow.Domain.Entites;
 
 namespace TaskFlow.Application.Projects.Dtos;
@@ -34,7 +35,8 @@ public static class ProjectMappings
             CreatedAt = project.CreatedAt,
             UpdatedAt = project.UpdatedAt,
             IsDeleted = project.isDeleted,
-            OrganizationId = project.OrganizationId
+            OrganizationId = project.OrganizationId,
+            RowVersion = ConcurrencyToken.Encode(project.RowVersion)
         };
     }
 }
